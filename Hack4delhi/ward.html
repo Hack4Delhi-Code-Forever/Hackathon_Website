@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Details - Delhi Water-Logging System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="map.html">Map View</a>
+                    <a href="authority.html">Dashboard</a>
+                    <a href="complaint.html">Register Complaint</a>
+                    <a href="track.html">Track Complaint</a>
+                    <a href="my-complaints.html">My Complaints</a>
+                    <a href="admin-complaints.html">Manage Complaints</a>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                    <span class="icon" id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Back Navigation -->
+    <section class="back-section">
+        <div class="container">
+            <a href="map.html" class="back-button">
+                <span>←</span>
+                <span>Back to Map</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Ward Header -->
+    <section class="ward-header">
+        <div class="container">
+            <h1 id="ward-name">Loading Ward...</h1>
+            <div class="risk-badge-large" id="risk-badge">Loading...</div>
+        </div>
+    </section>
+
+    <!-- Ward Key Metrics -->
+    <section class="ward-details-section">
+        <div class="container">
+            <!-- Action Button -->
+            <div style="margin-bottom: 2rem;">
+                <button class="btn btn-warning" onclick="reportWaterlogging()" style="width: 100%; padding: 1rem; font-size: 1.125rem;">
+                    ⚠️ Report Water-Logging in This Ward
+                </button>
+            </div>
+            
+            <div class="details-grid">
+                <!-- Risk Score Card -->
+                <div class="detail-card">
+                    <h3>Flood Risk Score</h3>
+                    <div class="risk-score-display">
+                        <div class="score-number" id="risk-score">--</div>
+                        <div class="score-label">out of 100</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="risk-progress"></div>
+                    </div>
+                </div>
+
+                <!-- Rainfall Info -->
+                <div class="detail-card">
+                    <h3>💧 Rainfall Intensity</h3>
+                    <div class="metric-value" id="rainfall">-- mm</div>
+                    <div class="metric-label" id="rainfall-level">--</div>
+                </div>
+
+                <!-- Drainage Condition -->
+                <div class="detail-card">
+                    <h3>🚰 Drainage Status</h3>
+                    <div class="metric-value" id="drainage-score">--</div>
+                    <div class="metric-label" id="drainage-status">--</div>
+                </div>
+
+                <!-- Past Incidents -->
+                <div class="detail-card">
+                    <h3>📋 Historical Data</h3>
+                    <div class="metric-value" id="incidents">--</div>
+                    <div class="metric-label">Water-logging events (2026)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Historical Incidents -->
+    <section class="incidents-section">
+        <div class="container">
+            <h2>Recent Water-Logging Incidents</h2>
+            <div class="incidents-list" id="incidents-list">
+                <!-- Generated dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Prediction -->
+    <section class="prediction-section">
+        <div class="container">
+            <h2>🔮 Flood Risk Prediction</h2>
+            <div class="prediction-card">
+                <div class="prediction-header">
+                    <h3>Risk Assessment Analysis</h3>
+                </div>
+                <div class="prediction-logic" id="prediction-logic">
+                    <!-- Generated dynamically -->
+                </div>
+                
+                <!-- Response Timeline -->
+                <div class="timeline">
+                    <h3>Emergency Response Timeline</h3>
+                    <div class="timeline-items">
+                        <div class="timeline-item">
+                            <div class="timeline-marker before">📅</div>
+                            <div class="timeline-content">
+                                <h4>Before Rain</h4>
+                                <ul id="before-rain-actions">
+                                    <!-- Generated dynamically -->
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker during">⚡</div>
+                            <div class="timeline-content">
+                                <h4>During Rain</h4>
+                                <ul id="during-rain-actions">
+                                    <!-- Generated dynamically -->
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker after">✅</div>
+                            <div class="timeline-content">
+                                <h4>After Rain</h4>
+                                <ul id="after-rain-actions">
+                                    <!-- Generated dynamically -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Actionable Recommendations -->
+    <section class="recommendations-section">
+        <div class="container">
+            <h2>✅ Recommended Actions</h2>
+            <div class="recommendations-grid" id="recommendations">
+                <!-- Generated dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System</p>
+        </div>
+    </footer>
+
+    <!-- Load Data and Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="complaints.js"></script>
+    <script>
+        let currentWard = null;
+
+        // Load ward details when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            loadWardDetails();
+        });
+
+        function loadWardDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const wardId = parseInt(params.get('id'));
+
+            if (!wardId || typeof enhancedWardsData === 'undefined') {
+                window.location.href = 'map.html';
+                return;
+            }
+
+            currentWard = enhancedWardsData.find(w => w.id === wardId);
+
+            if (!currentWard) {
+                window.location.href = 'map.html';
+                return;
+            }
+
+            displayWardDetails(currentWard);
+        }
+
+        function displayWardDetails(ward) {
+            // Header
+            document.getElementById('ward-name').textContent = ward.name;
+            document.getElementById('risk-badge').textContent = ward.riskLevel + ' Risk';
+            document.getElementById('risk-badge').className = 'risk-badge-large badge-' + ward.riskLevel.toLowerCase();
+
+            // Metrics
+            document.getElementById('risk-score').textContent = ward.riskScore;
+            const riskProgress = document.getElementById('risk-progress');
+            if (riskProgress) {
+                riskProgress.style.width = ward.riskScore + '%';
+                riskProgress.style.backgroundColor = ward.riskColor;
+            }
+
+            document.getElementById('rainfall').textContent = ward.rainfall + ' mm';
+            document.getElementById('rainfall-level').textContent = ward.rainfallLevel + ' Intensity';
+
+            document.getElementById('drainage-score').textContent = ward.drainageScore + '%';
+            document.getElementById('drainage-status').textContent = ward.drainageStatus + ' Condition';
+
+            document.getElementById('incidents').textContent = ward.pastIncidents;
+
+            // Historical Incidents
+            const incidentsList = document.getElementById('incidents-list');
+            if (incidentsList) {
+                if (ward.incidentHistory && ward.incidentHistory.length > 0) {
+                    incidentsList.innerHTML = ward.incidentHistory.map(incident => `
+                        <div class="incident-card">
+                            <div class="incident-date">${incident.date}</div>
+                            <div class="incident-details">
+                                <span class="badge badge-${incident.severity.toLowerCase()}">${incident.severity}</span>
+                                <span>Duration: ${incident.duration}</span>
+                            </div>
+                            <div class="incident-description">${incident.description}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    incidentsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No recent incidents recorded</p>';
+                }
+            }
+
+            // AI Prediction Logic
+            const predictionLogic = document.getElementById('prediction-logic');
+            if (predictionLogic) {
+                let predictionHTML = '';
+                
+                if (ward.riskScore >= 71) {
+                    predictionHTML = `
+                        <div class="alert alert-danger">
+                            <span class="alert-icon">🚨</span>
+                            <div class="alert-content">
+                                <div class="alert-title">High Flood Risk Detected</div>
+                                <div class="alert-message">
+                                    This ward has a critical risk score of ${ward.riskScore}/100. 
+                                    Heavy rainfall combined with poor drainage (${ward.drainageScore}%) and ${ward.pastIncidents} past incidents 
+                                    indicate high probability of severe water-logging during next monsoon event.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (ward.riskScore >= 41) {
+                    predictionHTML = `
+                        <div class="alert alert-warning">
+                            <span class="alert-icon">⚠️</span>
+                            <div class="alert-content">
+                                <div class="alert-title">Moderate Flood Risk</div>
+                                <div class="alert-message">
+                                    Risk score of ${ward.riskScore}/100 suggests possible water accumulation during heavy rainfall. 
+                                    Current drainage capacity at ${ward.drainageScore}% requires monitoring.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    predictionHTML = `
+                        <div class="alert alert-success">
+                            <span class="alert-icon">✅</span>
+                            <div class="alert-content">
+                                <div class="alert-title">Low Flood Risk</div>
+                                <div class="alert-message">
+                                    Risk score of ${ward.riskScore}/100 indicates minimal water-logging risk. 
+                                    Good drainage system (${ward.drainageScore}%) and low incident history suggest adequate preparedness.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                predictionLogic.innerHTML = predictionHTML;
+            }
+
+            // Timeline Actions
+            generateTimelineActions(ward);
+
+            // Recommendations
+            generateRecommendations(ward);
+        }
+
+        function generateTimelineActions(ward) {
+            const beforeRain = document.getElementById('before-rain-actions');
+            const duringRain = document.getElementById('during-rain-actions');
+            const afterRain = document.getElementById('after-rain-actions');
+
+            if (ward.riskScore >= 71) {
+                if (beforeRain) beforeRain.innerHTML = `
+                    <li>Deploy high-capacity pumps at hotspot locations</li>
+                    <li>Clear all drainage channels and remove debris</li>
+                    <li>Pre-position emergency response teams</li>
+                    <li>Issue advance alerts to residents via SMS</li>
+                `;
+                if (duringRain) duringRain.innerHTML = `
+                    <li>Activate all pumping stations</li>
+                    <li>Monitor water levels in real-time</li>
+                    <li>Implement traffic diversions if needed</li>
+                    <li>Deploy rescue teams on standby</li>
+                `;
+                if (afterRain) afterRain.innerHTML = `
+                    <li>Assess damage and infrastructure impact</li>
+                    <li>Document incident for future reference</li>
+                    <li>Schedule drainage system repairs</li>
+                `;
+            } else if (ward.riskScore >= 41) {
+                if (beforeRain) beforeRain.innerHTML = `
+                    <li>Inspect drainage systems for blockages</li>
+                    <li>Position pumping equipment at key locations</li>
+                    <li>Monitor weather forecasts closely</li>
+                `;
+                if (duringRain) duringRain.innerHTML = `
+                    <li>Monitor critical drainage points</li>
+                    <li>Activate pumps if water accumulates</li>
+                    <li>Keep response teams informed</li>
+                `;
+                if (afterRain) afterRain.innerHTML = `
+                    <li>Check for any damage or blockages</li>
+                    <li>Clear accumulated debris</li>
+                    <li>Update incident logs</li>
+                `;
+            } else {
+                if (beforeRain) beforeRain.innerHTML = `
+                    <li>Routine drainage inspection</li>
+                    <li>Ensure pumps are operational</li>
+                    <li>Monitor rainfall forecasts</li>
+                `;
+                if (duringRain) duringRain.innerHTML = `
+                    <li>Continue normal monitoring</li>
+                    <li>Log rainfall data</li>
+                `;
+                if (afterRain) afterRain.innerHTML = `
+                    <li>Routine post-rain inspection</li>
+                    <li>Update maintenance records</li>
+                `;
+            }
+        }
+
+        function generateRecommendations(ward) {
+            const recommendations = document.getElementById('recommendations');
+            if (!recommendations) return;
+
+            let actionsList = [];
+
+            if (ward.riskScore >= 71) {
+                actionsList = [
+                    { priority: 'critical', text: 'Deploy high-capacity water pumps immediately' },
+                    { priority: 'critical', text: 'Issue traffic diversion alerts via SMS' },
+                    { priority: 'high', text: 'Activate emergency response teams' },
+                    { priority: 'high', text: 'Send real-time alerts to residents' }
+                ];
+            } else if (ward.riskScore >= 41) {
+                actionsList = [
+                    { priority: 'high', text: 'Schedule comprehensive drain inspection within 24 hours' },
+                    { priority: 'medium', text: 'Pre-position pumping equipment at strategic locations' },
+                    { priority: 'medium', text: 'Clear drainage blockages and remove debris' },
+                    { priority: 'low', text: 'Monitor rainfall forecasts and increase surveillance' }
+                ];
+            } else {
+                actionsList = [
+                    { priority: 'low', text: 'Continue routine monitoring and data collection' },
+                    { priority: 'low', text: 'Maintain regular preventive maintenance schedule' },
+                    { priority: 'low', text: 'Update drainage system documentation' }
+                ];
+            }
+
+            recommendations.innerHTML = actionsList.map(action => `
+                <div class="recommendation-card priority-${action.priority}">
+                    <div class="priority-badge">${action.priority.toUpperCase()}</div>
+                    <div class="recommendation-text">${action.text}</div>
+                    <input type="checkbox" class="recommendation-checkbox">
+                </div>
+            `).join('');
+        }
+
+        function reportWaterlogging() {
+            if (currentWard) {
+                window.location.href = `complaint.html?ward=${encodeURIComponent(currentWard.name)}&zone=${encodeURIComponent(currentWard.district)}&lat=${currentWard.lat}&lng=${currentWard.lng}&category=Water Logging`;
+            }
+        }
+    </script>
+</body>
+</html>

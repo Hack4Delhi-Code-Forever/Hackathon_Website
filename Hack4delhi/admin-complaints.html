@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Complaints - Delhi Water-Logging System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="map.html">Map View</a>
+                    <a href="authority.html">Dashboard</a>
+                    <a href="complaint.html">Register Complaint</a>
+                    <a href="track.html">Track Complaint</a>
+                    <a href="my-complaints.html">My Complaints</a>
+                    <a href="admin-complaints.html" class="active">Manage Complaints</a>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                    <span class="icon" id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="dashboard-header">
+        <div class="container">
+            <h1>🔧 Authority Complaint Management</h1>
+            <p>Review, update, and manage citizen complaints</p>
+            <div class="last-updated">Last Updated: <span id="current-time"></span></div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="summary-section">
+        <div class="container">
+            <div class="summary-grid">
+                <div class="summary-card warning">
+                    <h3>Pending Verification</h3>
+                    <div class="summary-number" id="pending-count">0</div>
+                </div>
+                <div class="summary-card info">
+                    <h3>Verified</h3>
+                    <div class="summary-number" id="verified-count">0</div>
+                </div>
+                <div class="summary-card info">
+                    <h3>In Progress</h3>
+                    <div class="summary-number" id="progress-count">0</div>
+                </div>
+                <div class="summary-card stable">
+                    <h3>Resolved</h3>
+                    <div class="summary-number" id="resolved-count">0</div>
+                </div>
+                <div class="summary-card critical">
+                    <h3>Escalated</h3>
+                    <div class="summary-number" id="escalated-count">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Complaints</h3>
+                    <div class="summary-number" id="total-count">0</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters & Search -->
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="search-filters">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="search-input" 
+                    placeholder="🔍 Search by ID, citizen name, phone, or address..."
+                    oninput="filterComplaints()"
+                >
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label">Status Filter</label>
+                        <select id="status-filter" class="form-select" onchange="filterComplaints()">
+                            <option value="">All Statuses</option>
+                            <option value="Pending Verification">Pending Verification</option>
+                            <option value="Verified">Verified</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label">Severity Filter</label>
+                        <select id="severity-filter" class="form-select" onchange="filterComplaints()">
+                            <option value="">All Severities</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label">Category Filter</label>
+                        <select id="category-filter" class="form-select" onchange="filterComplaints()">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label">Escalated Only</label>
+                        <select id="escalated-filter" class="form-select" onchange="filterComplaints()">
+                            <option value="">All</option>
+                            <option value="true">Escalated Only</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container" style="margin-top: 2rem;">
+                <table class="wards-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ward</th>
+                            <th>Category</th>
+                            <th>Severity</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Escalated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaints-table-body">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <div class="empty-icon">📭</div>
+                <h3 class="empty-title">No Complaints Found</h3>
+                <p class="empty-message">No complaints match your filter criteria</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detail & Action Modal -->
+    <div id="detail-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Complaint Management</h3>
+                <button class="modal-close" onclick="closeModal()">✖️</button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <!-- Actions loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="complaints.js"></script>
+    <script>
+        let allComplaints = [];
+        let filteredComplaints = [];
+        let currentComplaint = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000);
+            
+            populateFilters();
+            loadComplaints();
+        });
+
+        function populateFilters() {
+            const categoryFilter = document.getElementById('category-filter');
+            COMPLAINT_CATEGORIES.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function loadComplaints() {
+            allComplaints = getComplaints();
+            filteredComplaints = allComplaints;
+            
+            updateStats();
+            displayComplaints();
+        }
+
+        function updateStats() {
+            const stats = getComplaintStats();
+            
+            document.getElementById('pending-count').textContent = stats.pending;
+            document.getElementById('verified-count').textContent = stats.verified;
+            document.getElementById('progress-count').textContent = stats.inProgress;
+            document.getElementById('resolved-count').textContent = stats.resolved;
+            document.getElementById('escalated-count').textContent = stats.escalated;
+            document.getElementById('total-count').textContent = stats.total;
+        }
+
+        function filterComplaints() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const severityFilter = document.getElementById('severity-filter').value;
+            const categoryFilter = document.getElementById('category-filter').value;
+            const escalatedFilter = document.getElementById('escalated-filter').value;
+            
+            filteredComplaints = allComplaints.filter(c => {
+                const matchesSearch = 
+                    c.id.toLowerCase().includes(searchTerm) ||
+                    c.citizen.name.toLowerCase().includes(searchTerm) ||
+                    c.citizen.phone.includes(searchTerm) ||
+                    c.address.toLowerCase().includes(searchTerm) ||
+                    c.ward.toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || c.status === statusFilter;
+                const matchesSeverity = !severityFilter || c.severity === severityFilter;
+                const matchesCategory = !categoryFilter || c.category === categoryFilter;
+                const matchesEscalated = !escalatedFilter || c.escalated === (escalatedFilter === 'true');
+                
+                return matchesSearch && matchesStatus && matchesSeverity && matchesCategory && matchesEscalated;
+            });
+            
+            displayComplaints();
+        }
+
+        function displayComplaints() {
+            const tbody = document.getElementById('complaints-table-body');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (filteredComplaints.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            // Sort by priority: Escalated > High Severity > Recent
+            const sorted = [...filteredComplaints].sort((a, b) => {
+                if (a.escalated !== b.escalated) return b.escalated ? 1 : -1;
+                
+                const severityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+                if (a.severity !== b.severity) {
+                    return severityOrder[b.severity] - severityOrder[a.severity];
+                }
+                
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            
+            tbody.innerHTML = sorted.map(c => `
+                <tr style="${c.escalated ? 'background-color: rgba(220, 38, 38, 0.05);' : ''}">
+                    <td><strong>${c.id}</strong></td>
+                    <td>${c.ward}<br><small>${c.zone}</small></td>
+                    <td>${c.category}</td>
+                    <td><span class="badge badge-${c.severity.toLowerCase()}">${c.severity}</span></td>
+                    <td>${formatDateShort(c.createdAt)}</td>
+                    <td><span class="badge badge-${c.status.toLowerCase().replace(/\s+/g, '-')}">${c.status}</span></td>
+                    <td>${c.escalated ? '<span class="badge badge-danger">Yes</span>' : '-'}</td>
+                    <td>
+                        <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.75rem;" onclick='viewComplaint(${JSON.stringify(c.id)})'>
+                            Manage
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function viewComplaint(complaintId) {
+            currentComplaint = getComplaint(complaintId);
+            if (!currentComplaint) return;
+            
+            const modalContent = document.getElementById('modal-content');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            modalContent.innerHTML = `
+                <!-- Citizen & Location Info -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <h4 style="margin-bottom: 1rem;">👤 Citizen Information</h4>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <div><strong>Name:</strong> ${currentComplaint.citizen.name}</div>
+                            <div><strong>Phone:</strong> ${currentComplaint.citizen.phone}</div>
+                            ${currentComplaint.citizen.email ? `<div><strong>Email:</strong> ${currentComplaint.citizen.email}</div>` : ''}
+                        </div>
+                    </div>
+
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <h4 style="margin-bottom: 1rem;">📍 Location Details</h4>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <div><strong>Ward:</strong> ${currentComplaint.ward}</div>
+                            <div><strong>Zone:</strong> ${currentComplaint.zone}</div>
+                            ${currentComplaint.lat && currentComplaint.lng ? `
+                                <div>
+                                    <a href="https://www.google.com/maps?q=${currentComplaint.lat},${currentComplaint.lng}" target="_blank" class="btn btn-secondary" style="font-size: 0.875rem; padding: 0.25rem 0.75rem;">
+                                        📍 Open in Maps
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Metadata -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Category</div>
+                        <strong>${currentComplaint.category}</strong>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Severity</div>
+                        <span class="badge badge-${currentComplaint.severity.toLowerCase()}">${currentComplaint.severity}</span>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Status</div>
+                        <span class="badge badge-${currentComplaint.status.toLowerCase().replace(/\s+/g, '-')}">${currentComplaint.status}</span>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Escalated</div>
+                        ${currentComplaint.escalated ? '<span class="badge badge-danger">Yes</span>' : '<span>No</span>'}
+                    </div>
+                    ${currentComplaint.department ? `
+                        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Department</div>
+                            <strong>${currentComplaint.department}</strong>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Address & Description -->
+                <div style="margin-bottom: 2rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Address:</strong>
+                        <p style="margin-top: 0.5rem; color: var(--text-secondary);">${currentComplaint.address}</p>
+                    </div>
+                    <div>
+                        <strong>Problem Description:</strong>
+                        <p style="margin-top: 0.5rem; color: var(--text-secondary);">${currentComplaint.description}</p>
+                    </div>
+                </div>
+
+                <!-- Photo -->
+                ${currentComplaint.photoBase64 ? `
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;">📷 Photo Evidence</h4>
+                        <img src="${currentComplaint.photoBase64}" alt="Complaint photo" style="max-width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+                    </div>
+                ` : ''}
+
+                <!-- Timeline -->
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">📅 Status Timeline</h4>
+                    <div class="timeline">
+                        ${currentComplaint.timeline.map(t => `
+                            <div class="timeline-item">
+                                <div class="timeline-marker ${t.status}">
+                                    ${t.status === 'completed' ? '✓' : t.status === 'current' ? '●' : '○'}
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">${t.step}</div>
+                                    ${t.date ? `<div class="timeline-date">${formatDate(t.date)}</div>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Update Form -->
+                <div style="padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="margin-bottom: 1rem;">🔧 Update Complaint</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Update Status</label>
+                        <select id="update-status" class="form-select">
+                            <option value="">-- Select Action --</option>
+                            ${currentComplaint.status === 'Pending Verification' ? `
+                                <option value="Verified">Verify Complaint</option>
+                                <option value="Rejected">Reject Complaint</option>
+                            ` : ''}
+                            ${currentComplaint.status === 'Verified' ? `
+                                <option value="In Progress">Mark In Progress</option>
+                            ` : ''}
+                            ${currentComplaint.status === 'In Progress' ? `
+                                <option value="Resolved">Mark Resolved</option>
+                            ` : ''}
+                        </select>
+                    </div>
+
+                    ${currentComplaint.status === 'Pending Verification' || !currentComplaint.department ? `
+                        <div class="form-group">
+                            <label class="form-label">Assign Department</label>
+                            <select id="update-department" class="form-select">
+                                <option value="">Select Department</option>
+                                <option value="MCD">MCD - Municipal Corporation</option>
+                                <option value="PWD">PWD - Public Works Department</option>
+                                <option value="DJB">DJB - Delhi Jal Board</option>
+                            </select>
+                        </div>
+                    ` : ''}
+
+                    <div class="form-group">
+                        <label class="form-label">Officer Comment</label>
+                        <textarea id="update-comment" class="form-textarea" rows="3" placeholder="Add comment or update for citizen...">${currentComplaint.officerComment || ''}</textarea>
+                    </div>
+
+                    ${!currentComplaint.eta ? `
+                        <div class="form-group">
+                            <label class="form-label">Expected Resolution Date</label>
+                            <input type="date" id="update-eta" class="form-input" min="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                    ` : `
+                        <div class="form-group">
+                            <label class="form-label">Current ETA</label>
+                            <input type="text" class="form-input" value="${currentComplaint.eta}" readonly>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            modalFooter.innerHTML = `
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="updateComplaintData()">💾 Save Updates</button>
+            `;
+            
+            document.getElementById('modal-title').textContent = currentComplaint.id;
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function updateComplaintData() {
+            const status = document.getElementById('update-status').value;
+            const comment = document.getElementById('update-comment').value;
+            const departmentEl = document.getElementById('update-department');
+            const etaEl = document.getElementById('update-eta');
+            
+            const department = departmentEl ? departmentEl.value : null;
+            const eta = etaEl ? etaEl.value : null;
+            
+            if (!status && !comment && !department && !eta) {
+                showToast('Please make at least one update', 'error');
+                return;
+            }
+            
+            let updated = currentComplaint;
+            
+            if (status) {
+                updated = updateComplaintStatus(
+                    currentComplaint.id,
+                    status,
+                    comment,
+                    eta,
+                    department
+                );
+            } else {
+                // Update only comment/eta/department without status change
+                updated = updateComplaint(currentComplaint.id, {
+                    officerComment: comment || currentComplaint.officerComment,
+                    eta: eta || currentComplaint.eta,
+                    department: department || currentComplaint.department
+                });
+            }
+            
+            if (updated) {
+                showToast('Complaint updated successfully', 'success');
+                simulateNotification(updated, 'status_update');
+                closeModal();
+                loadComplaints();
+            } else {
+                showToast('Failed to update complaint', 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+            currentComplaint = null;
+        }
+    </script>
+</body>
+</html>

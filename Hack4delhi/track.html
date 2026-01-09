@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Complaint - Delhi Water-Logging System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="map.html">Map View</a>
+                    <a href="authority.html">Dashboard</a>
+                    <a href="complaint.html">Register Complaint</a>
+                    <a href="track.html" class="active">Track Complaint</a>
+                    <a href="my-complaints.html">My Complaints</a>
+                    <a href="admin-complaints.html">Manage Complaints</a>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                    <span class="icon" id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="dashboard-header">
+        <div class="container">
+            <h1>🔍 Track Complaint Status</h1>
+            <p>Search by Complaint ID or Phone Number</p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="section">
+        <div class="container">
+            <div class="form-container">
+                <div class="form-card">
+                    <form id="track-form">
+                        <div class="form-group">
+                            <label for="search" class="form-label">Complaint ID or Phone Number</label>
+                            <input 
+                                type="text" 
+                                id="search" 
+                                name="search" 
+                                class="form-input" 
+                                placeholder="e.g., DLG-2026-00001 or 9876543210"
+                                required
+                            >
+                            <small class="form-help">Enter your 10-digit phone number or complaint ID</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            🔍 Track Complaint
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Search Results -->
+                <div id="results-container" class="hidden" style="margin-top: 2rem;">
+                    <!-- Results will be displayed here -->
+                </div>
+
+                <!-- No Results -->
+                <div id="no-results" class="hidden" style="margin-top: 2rem;">
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <h3 class="empty-title">No Complaint Found</h3>
+                        <p class="empty-message">Please check the Complaint ID or Phone Number and try again</p>
+                        <a href="complaint.html" class="btn btn-primary">Register New Complaint</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Complaint Detail Modal -->
+    <div id="detail-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Complaint Details</h3>
+                <button class="modal-close" onclick="closeDetailModal()">✖️</button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDetailModal()">Close</button>
+                <button id="escalate-btn" class="btn btn-warning hidden" onclick="escalate()">⚠️ Escalate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="complaints.js"></script>
+    <script>
+        let currentComplaint = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            document.getElementById('track-form').addEventListener('submit', handleSearch);
+            
+            // Check if ID in URL
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (id) {
+                document.getElementById('search').value = id;
+                handleSearch(new Event('submit'));
+            }
+        });
+
+        function handleSearch(event) {
+            event.preventDefault();
+            
+            const searchTerm = document.getElementById('search').value.trim();
+            const results = searchComplaint(searchTerm);
+            
+            document.getElementById('no-results').classList.add('hidden');
+            document.getElementById('results-container').classList.add('hidden');
+            
+            if (results.length === 0) {
+                document.getElementById('no-results').classList.remove('hidden');
+            } else if (results.length === 1) {
+                currentComplaint = results[0];
+                showDetailModal(results[0]);
+            } else {
+                displayResults(results);
+            }
+        }
+
+        function displayResults(complaints) {
+            const container = document.getElementById('results-container');
+            container.classList.remove('hidden');
+            
+            container.innerHTML = `
+                <h3 style="margin-bottom: 1.5rem;">Found ${complaints.length} Complaint(s)</h3>
+                ${complaints.map(c => `
+                    <div class="complaint-card">
+                        <div class="complaint-header">
+                            <div>
+                                <div class="complaint-id">${c.id}</div>
+                                <span class="badge badge-${c.status.toLowerCase().replace(/\s+/g, '-')}">${c.status}</span>
+                            </div>
+                        </div>
+                        <div class="complaint-meta">
+                            <div class="complaint-meta-item">
+                                <strong>📁 Category:</strong> ${c.category}
+                            </div>
+                            <div class="complaint-meta-item">
+                                <strong>📍 Ward:</strong> ${c.ward}
+                            </div>
+                            <div class="complaint-meta-item">
+                                <strong>📅 Filed:</strong> ${formatDateShort(c.createdAt)}
+                            </div>
+                            <div class="complaint-meta-item">
+                                <strong>⚠️ Severity:</strong> 
+                                <span class="badge badge-${c.severity.toLowerCase()}">${c.severity}</span>
+                            </div>
+                        </div>
+                        <div class="complaint-actions">
+                            <button class="btn btn-primary" onclick="showDetailModal(getComplaint('${c.id}'))">View Details</button>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function showDetailModal(complaint) {
+            currentComplaint = complaint;
+            
+            const canEsc = canEscalate(complaint);
+            const escalateBtn = document.getElementById('escalate-btn');
+            
+            if (canEsc) {
+                escalateBtn.classList.remove('hidden');
+            } else {
+                escalateBtn.classList.add('hidden');
+            }
+            
+            const modalContent = document.getElementById('modal-content');
+            modalContent.innerHTML = `
+                <!-- Status & Basic Info -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Status</div>
+                        <span class="badge badge-${complaint.status.toLowerCase().replace(/\s+/g, '-')}">${complaint.status}</span>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Severity</div>
+                        <span class="badge badge-${complaint.severity.toLowerCase()}">${complaint.severity}</span>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Escalated</div>
+                        <span>${complaint.escalated ? '✅ Yes' : '❌ No'}</span>
+                    </div>
+                    ${complaint.department ? `
+                        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Department</div>
+                            <strong>${complaint.department}</strong>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Timeline -->
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">📅 Status Timeline</h4>
+                    <div class="timeline">
+                        ${complaint.timeline.map(t => `
+                            <div class="timeline-item">
+                                <div class="timeline-marker ${t.status}">
+                                    ${t.status === 'completed' ? '✓' : t.status === 'current' ? '●' : '○'}
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">${t.step}</div>
+                                    ${t.date ? `<div class="timeline-date">${formatDate(t.date)}</div>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                    <div>
+                        <strong>Category:</strong> ${complaint.category}
+                    </div>
+                    <div>
+                        <strong>Ward:</strong> ${complaint.ward} (${complaint.zone})
+                    </div>
+                    <div>
+                        <strong>Address:</strong> ${complaint.address}
+                    </div>
+                    ${complaint.lat && complaint.lng ? `
+                        <div>
+                            <strong>Location:</strong> 
+                            <a href="https://www.google.com/maps?q=${complaint.lat},${complaint.lng}" target="_blank" class="btn btn-secondary" style="font-size: 0.875rem; padding: 0.25rem 0.75rem;">
+                                📍 View on Map
+                            </a>
+                        </div>
+                    ` : ''}
+                    <div>
+                        <strong>Description:</strong>
+                        <p style="margin-top: 0.5rem; color: var(--text-secondary);">${complaint.description}</p>
+                    </div>
+                    <div>
+                        <strong>Filed On:</strong> ${formatDate(complaint.createdAt)}
+                    </div>
+                    ${complaint.eta ? `
+                        <div>
+                            <strong>Expected Resolution:</strong> ${complaint.eta}
+                        </div>
+                    ` : ''}
+                    ${complaint.officerComment ? `
+                        <div class="alert alert-info">
+                            <span class="alert-icon">💬</span>
+                            <div class="alert-content">
+                                <div class="alert-title">Officer Comment</div>
+                                <div class="alert-message">${complaint.officerComment}</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Photo -->
+                ${complaint.photoBase64 ? `
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;">📷 Photo Evidence</h4>
+                        <img src="${complaint.photoBase64}" alt="Complaint photo" style="max-width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+                    </div>
+                ` : ''}
+
+                <!-- Citizen Info -->
+                <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <h4 style="margin-bottom: 1rem;">👤 Citizen Information</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        <div><strong>Name:</strong> ${complaint.citizen.name}</div>
+                        <div><strong>Phone:</strong> ${complaint.citizen.phone}</div>
+                        ${complaint.citizen.email ? `<div><strong>Email:</strong> ${complaint.citizen.email}</div>` : ''}
+                    </div>
+                </div>
+
+                ${canEsc ? `
+                    <div class="alert alert-warning" style="margin-top: 1.5rem;">
+                        <span class="alert-icon">⏰</span>
+                        <div class="alert-content">
+                            <div class="alert-title">Escalation Available</div>
+                            <div class="alert-message">This complaint has been pending for more than 48 hours. You can escalate it to higher authorities.</div>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('modal-title').textContent = complaint.id;
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+        }
+
+        function escalate() {
+            if (currentComplaint && escalateComplaint(currentComplaint.id)) {
+                currentComplaint.escalated = true;
+                simulateNotification(currentComplaint, 'escalated');
+                showDetailModal(currentComplaint);
+            }
+        }
+    </script>
+</body>
+</html>

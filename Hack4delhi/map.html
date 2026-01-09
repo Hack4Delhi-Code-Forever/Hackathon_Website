@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Risk Map - Delhi Water-Logging System</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="map.html" class="active">Map View</a>
+                    <a href="authority.html">Dashboard</a>
+                    <a href="complaint.html">Register Complaint</a>
+                    <a href="track.html">Track Complaint</a>
+                    <a href="my-complaints.html">My Complaints</a>
+                    <a href="admin-complaints.html">Manage Complaints</a>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                    <span class="icon" id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Map Header -->
+    <section class="map-header">
+        <div class="container">
+            <h1>Delhi Flood Risk Map</h1>
+            <p>Interactive ward-level visualization | Click any zone for detailed information</p>
+        </div>
+    </section>
+
+    <!-- Risk Legend - Sticky -->
+    <section class="map-legend">
+        <div class="container">
+            <h3>Risk Levels:</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="legend-color low"></span>
+                    <span>Low Risk (0-40)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color medium"></span>
+                    <span>Medium Risk (41-70)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color high"></span>
+                    <span>High Risk (71-100)</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section - Split Layout -->
+    <section class="map-section">
+        <div class="container">
+            <!-- Delhi GIS Map Container -->
+            <div class="map-container">
+                <div id="delhi-map" style="height: 700px; width: 100%; border-radius: 12px;"></div>
+            </div>
+
+            <!-- Hotspots Sidebar - Sticky -->
+            <div class="hotspots-sidebar">
+                <h3>Water-Logging Hotspots</h3>
+                <div id="hotspots-list">
+                    <!-- Generated dynamically by script.js -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System</p>
+        </div>
+    </footer>
+
+    <!-- Load Data and Scripts -->
+    <script src="translation.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="complaints.js"></script>
+    <script>
+        // Initialize map when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            initializeLanguage();
+            initializeLeafletMap();
+            renderHotspotsList();
+        });
+
+        // Add complaint reporting functionality to map markers
+        function initializeLeafletMap() {
+            if (typeof L === 'undefined' || typeof enhancedWardsData === 'undefined') return;
+
+            const map = L.map('delhi-map').setView([28.6139, 77.2090], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            enhancedWardsData.forEach(ward => {
+                const color = ward.riskColor;
+                
+                const marker = L.circleMarker([ward.lat, ward.lng], {
+                    radius: 8,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                const popupContent = `
+                    <div style="min-width: 200px;">
+                        <h4 style="margin: 0 0 0.5rem 0;">${ward.name}</h4>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>District:</strong> ${ward.district}<br>
+                            <strong>Risk Score:</strong> ${ward.riskScore}<br>
+                            <strong>Rainfall:</strong> ${ward.rainfall} mm<br>
+                            <strong>Drainage:</strong> ${ward.drainageScore}%
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem;">
+                            <a href="ward.html?id=${ward.id}" class="btn btn-primary" style="font-size: 0.875rem; padding: 0.5rem; text-align: center; text-decoration: none;">
+                                📊 View Details
+                            </a>
+                            <a href="complaint.html?ward=${encodeURIComponent(ward.name)}&zone=${encodeURIComponent(ward.district)}&lat=${ward.lat}&lng=${ward.lng}&category=Water Logging" class="btn btn-warning" style="font-size: 0.875rem; padding: 0.5rem; text-align: center; text-decoration: none;">
+                                ⚠️ Report Waterlogging Here
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+            });
+        }
+
+        function renderHotspotsList() {
+            const container = document.getElementById('hotspots-list');
+            if (!container || typeof sortedWards === 'undefined') return;
+
+            container.innerHTML = sortedWards.slice(0, 10).map((ward, index) => `
+                <div class="hotspot-item" style="border-left: 4px solid ${ward.riskColor}; padding: 1rem; margin-bottom: 0.75rem; background: var(--bg-primary); border-radius: 0.5rem; cursor: pointer;" onclick="window.location.href='ward.html?id=${ward.id}'">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>#${index + 1} ${ward.name}</strong>
+                        <span class="badge badge-${ward.riskLevel.toLowerCase()}">${ward.riskScore}</span>
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                        <div>${ward.district}</div>
+                        <div>Rainfall: ${ward.rainfall} mm</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initializeLanguage() {
+            const savedLang = localStorage.getItem('language') || 'en';
+            const langSelector = document.getElementById('language-selector');
+            if (langSelector) {
+                langSelector.value = savedLang;
+                changeLanguage(savedLang);
+            }
+        }
+    </script>
+</body>
+</html>

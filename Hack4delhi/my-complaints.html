@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Complaints - Delhi Water-Logging System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="map.html">Map View</a>
+                    <a href="authority.html">Dashboard</a>
+                    <a href="complaint.html">Register Complaint</a>
+                    <a href="track.html">Track Complaint</a>
+                    <a href="my-complaints.html" class="active">My Complaints</a>
+                    <a href="admin-complaints.html">Manage Complaints</a>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                    <span class="icon" id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="dashboard-header">
+        <div class="container">
+            <h1>📋 My Complaints</h1>
+            <p>View and track all complaints filed from this device</p>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section">
+        <div class="container">
+            <div class="summary-grid">
+                <div class="summary-card info">
+                    <h3>Total Complaints</h3>
+                    <div class="summary-number" id="total-count">0</div>
+                </div>
+                <div class="summary-card warning">
+                    <h3>Pending</h3>
+                    <div class="summary-number" id="pending-count">0</div>
+                </div>
+                <div class="summary-card stable">
+                    <h3>Resolved</h3>
+                    <div class="summary-number" id="resolved-count">0</div>
+                </div>
+                <div class="summary-card critical">
+                    <h3>Escalated</h3>
+                    <div class="summary-number" id="escalated-count">0</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search & Filters -->
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="search-filters">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="search-input" 
+                    placeholder="🔍 Search by ID, ward, or category..."
+                    oninput="filterComplaints()"
+                >
+                
+                <div class="filter-chips">
+                    <div class="filter-chip active" onclick="filterByStatus('all')">All</div>
+                    <div class="filter-chip" onclick="filterByStatus('Pending Verification')">Pending</div>
+                    <div class="filter-chip" onclick="filterByStatus('Verified')">Verified</div>
+                    <div class="filter-chip" onclick="filterByStatus('In Progress')">In Progress</div>
+                    <div class="filter-chip" onclick="filterByStatus('Resolved')">Resolved</div>
+                </div>
+            </div>
+
+            <!-- Complaints List -->
+            <div id="complaints-container">
+                <!-- Loaded dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <div class="empty-icon">📭</div>
+                <h3 class="empty-title">No Complaints Found</h3>
+                <p class="empty-message">You haven't filed any complaints yet</p>
+                <a href="complaint.html" class="btn btn-primary">Register First Complaint</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Complaint Details</h3>
+                <button class="modal-close" onclick="closeModal()">✖️</button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="complaints.js"></script>
+    <script>
+        let allComplaints = [];
+        let filteredComplaints = [];
+        let currentFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            loadComplaints();
+        });
+
+        function loadComplaints() {
+            allComplaints = getComplaints();
+            filteredComplaints = allComplaints;
+            
+            updateStats();
+            displayComplaints();
+        }
+
+        function updateStats() {
+            document.getElementById('total-count').textContent = allComplaints.length;
+            document.getElementById('pending-count').textContent = 
+                allComplaints.filter(c => c.status === 'Pending Verification' || c.status === 'Verified').length;
+            document.getElementById('resolved-count').textContent = 
+                allComplaints.filter(c => c.status === 'Resolved').length;
+            document.getElementById('escalated-count').textContent = 
+                allComplaints.filter(c => c.escalated).length;
+        }
+
+        function filterByStatus(status) {
+            currentFilter = status;
+            
+            // Update chip states
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            filterComplaints();
+        }
+
+        function filterComplaints() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            filteredComplaints = allComplaints.filter(c => {
+                const matchesSearch = 
+                    c.id.toLowerCase().includes(searchTerm) ||
+                    c.ward.toLowerCase().includes(searchTerm) ||
+                    c.category.toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = currentFilter === 'all' || c.status === currentFilter;
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            displayComplaints();
+        }
+
+        function displayComplaints() {
+            const container = document.getElementById('complaints-container');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (filteredComplaints.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            // Sort by date (newest first)
+            const sorted = sortComplaints(filteredComplaints, 'date', 'desc');
+            
+            container.innerHTML = sorted.map(c => `
+                <div class="complaint-card">
+                    <div class="complaint-header">
+                        <div>
+                            <div class="complaint-id">${c.id}</div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                                <span class="badge badge-${c.status.toLowerCase().replace(/\s+/g, '-')}">${c.status}</span>
+                                <span class="badge badge-${c.severity.toLowerCase()}">${c.severity}</span>
+                                ${c.escalated ? '<span class="badge badge-danger">Escalated</span>' : ''}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.875rem; color: var(--text-tertiary);">Filed on</div>
+                            <div style="font-weight: 600;">${formatDateShort(c.createdAt)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="complaint-meta">
+                        <div class="complaint-meta-item">
+                            <span>📁</span> ${c.category}
+                        </div>
+                        <div class="complaint-meta-item">
+                            <span>📍</span> ${c.ward}, ${c.zone}
+                        </div>
+                        ${c.department ? `
+                            <div class="complaint-meta-item">
+                                <span>🏢</span> ${c.department}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="complaint-description">
+                        ${c.description.substring(0, 150)}${c.description.length > 150 ? '...' : ''}
+                    </div>
+                    
+                    ${c.officerComment ? `
+                        <div class="alert alert-info" style="margin-bottom: 1rem;">
+                            <span class="alert-icon">💬</span>
+                            <div class="alert-content">
+                                <div class="alert-message" style="font-size: 0.875rem;">${c.officerComment}</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="complaint-actions">
+                        <button class="btn btn-primary" onclick='viewDetails(${JSON.stringify(c.id)})'>
+                            View Full Details
+                        </button>
+                        ${c.photoBase64 ? '<span style="font-size: 0.875rem; color: var(--text-tertiary);">📷 Photo attached</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewDetails(complaintId) {
+            const complaint = getComplaint(complaintId);
+            if (!complaint) return;
+            
+            const modalContent = document.getElementById('modal-content');
+            modalContent.innerHTML = `
+                <!-- Status Info -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Status</div>
+                        <span class="badge badge-${complaint.status.toLowerCase().replace(/\s+/g, '-')}">${complaint.status}</span>
+                    </div>
+                    <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Severity</div>
+                        <span class="badge badge-${complaint.severity.toLowerCase()}">${complaint.severity}</span>
+                    </div>
+                    ${complaint.department ? `
+                        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Department</div>
+                            <strong>${complaint.department}</strong>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Timeline -->
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">📅 Status Timeline</h4>
+                    <div class="timeline">
+                        ${complaint.timeline.map(t => `
+                            <div class="timeline-item">
+                                <div class="timeline-marker ${t.status}">
+                                    ${t.status === 'completed' ? '✓' : t.status === 'current' ? '●' : '○'}
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">${t.step}</div>
+                                    ${t.date ? `<div class="timeline-date">${formatDate(t.date)}</div>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                    <div>
+                        <strong>Category:</strong> ${complaint.category}
+                    </div>
+                    <div>
+                        <strong>Location:</strong> ${complaint.ward}, ${complaint.zone}
+                    </div>
+                    <div>
+                        <strong>Address:</strong> ${complaint.address}
+                    </div>
+                    ${complaint.lat && complaint.lng ? `
+                        <div>
+                            <strong>Coordinates:</strong> 
+                            <a href="https://www.google.com/maps?q=${complaint.lat},${complaint.lng}" target="_blank" class="btn btn-secondary" style="font-size: 0.875rem; padding: 0.25rem 0.75rem;">
+                                📍 View on Map
+                            </a>
+                        </div>
+                    ` : ''}
+                    <div>
+                        <strong>Description:</strong>
+                        <p style="margin-top: 0.5rem; color: var(--text-secondary);">${complaint.description}</p>
+                    </div>
+                    ${complaint.eta ? `
+                        <div>
+                            <strong>Expected Resolution:</strong> ${complaint.eta}
+                        </div>
+                    ` : ''}
+                    ${complaint.officerComment ? `
+                        <div class="alert alert-info">
+                            <span class="alert-icon">💬</span>
+                            <div class="alert-content">
+                                <div class="alert-title">Officer Comment</div>
+                                <div class="alert-message">${complaint.officerComment}</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Photo -->
+                ${complaint.photoBase64 ? `
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;">📷 Photo Evidence</h4>
+                        <img src="${complaint.photoBase64}" alt="Complaint photo" style="max-width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+                    </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('modal-title').textContent = complaint.id;
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>

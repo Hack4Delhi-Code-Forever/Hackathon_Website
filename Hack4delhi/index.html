@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delhi Water-Logging Hotspot Mapping System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar with Theme Toggle -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="index.html" class="active" data-i18n="nav.home">Home</a>
+                    <a href="map.html" data-i18n="nav.map">Map View</a>
+                    <a href="authority.html" data-i18n="nav.dashboard">Dashboard</a>
+                    <a href="complaint.html" data-i18n="nav.complaint">Register Complaint</a>
+                    <a href="track.html" data-i18n="nav.track">Track Complaint</a>
+                    <a href="my-complaints.html" data-i18n="nav.myComplaints">My Complaints</a>
+                    <a href="admin-complaints.html" data-i18n="nav.adminComplaints">Manage Complaints</a>
+                </div>
+                <div class="nav-controls">
+                    <select class="language-selector" id="language-selector" onchange="changeLanguage(this.value)">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="pa">Punjabi</option>
+                        <option value="ur">Urdu</option>
+                    </select>
+                    <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                        <span class="icon" id="theme-icon">🌙</span>
+                        <span id="theme-text" data-i18n="theme.dark">Dark</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 data-i18n="hero.title">Delhi Water-Logging Hotspot Mapping System</h1>
+            <p class="subtitle" data-i18n="hero.subtitle">Real-time monitoring and predictive analytics for flood-prone areas across Delhi NCT</p>
+        </div>
+    </section>
+
+    <!-- Problem Statement -->
+    <section class="section problem-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="problem.title">The Challenge</h2>
+                <p class="section-description" data-i18n="problem.description">
+                    During monsoon season, Delhi faces severe water-logging issues that disrupt traffic, 
+                    damage infrastructure, and pose risks to public safety. This system helps authorities 
+                    identify high-risk zones, predict flooding events, and take preventive action through 
+                    data-driven insights and AI-powered recommendations.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Statistics - Bento Grid -->
+    <section class="section stats-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="stats.title">Current Impact Overview</h2>
+            </div>
+            <div class="stats-grid">
+                <!-- Stat Card 1 -->
+                <div class="stat-card">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-number">47</div>
+                    <div class="stat-label">Flood-Prone Wards</div>
+                    <div class="stat-description">Across 11 districts of Delhi</div>
+                </div>
+
+                <!-- Stat Card 2 -->
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-number">6.5</div>
+                    <div class="stat-label">Avg. Traffic Disruption</div>
+                    <div class="stat-description">Hours per heavy rainfall event</div>
+                </div>
+
+                <!-- Stat Card 3 -->
+                <div class="stat-card">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-number">23</div>
+                    <div class="stat-label">High-Risk Zones</div>
+                    <div class="stat-description">Requiring immediate attention</div>
+                </div>
+
+                <!-- Stat Card 4 -->
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-number">₹245 Cr</div>
+                    <div class="stat-label">Infrastructure Damage</div>
+                    <div class="stat-description">Estimated annual economic impact</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <section class="section features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="features.title">System Capabilities</h2>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>🗺️ Interactive Risk Map</h3>
+                    <p>Visualize water-logging hotspots across Delhi with color-coded risk levels and real-time data updates</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📊 Ward-Level Analytics</h3>
+                    <p>Detailed insights on drainage conditions, rainfall patterns, historical incidents, and infrastructure status</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔮 Predictive Intelligence</h3>
+                    <p>AI-powered flood risk predictions based on rainfall forecasts, drainage capacity, and historical patterns</p>
+                </div>
+                <div class="feature-card">
+                    <h3>✅ Action Dashboard</h3>
+                    <p>Prioritized recommendations for municipal authorities with automated emergency response protocols</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 data-i18n="cta.title">View Real-Time Flood Risk Map</h2>
+            <p data-i18n="cta.description">Access comprehensive ward-level water-logging data and predictive analytics</p>
+            <a href="map.html" class="cta-button">
+                <span data-i18n="cta.button">Open Flood Risk Map</span>
+                <span>→</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System | Government Hackathon Project</p>
+            <p>Developed for Municipal Corporation of Delhi (MCD)</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="translation.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
