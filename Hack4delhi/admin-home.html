@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Delhi Water-Logging System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System - Admin</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="admin-home.html" class="active">Admin Home</a>
+                    
+                    <!-- Citizen Tools Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">Citizen Tools ▾</a>
+                        <div class="dropdown-menu">
+                            <a href="map.html">🗺️ Flood Risk Map</a>
+                            <a href="complaint.html">📝 Register Complaint</a>
+                            <a href="track.html">🔍 Track Complaint</a>
+                            <a href="my-complaints.html">📋 My Complaints</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin Tools Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle">Admin Tools ▾</a>
+                        <div class="dropdown-menu">
+                            <a href="admin-complaints.html">📊 Complaints Overview</a>
+                            <a href="authority.html">🏛️ Authority Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-controls">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-full); border: 1px solid var(--border-color);">
+                        <span style="font-size: 1rem;">🏛️</span>
+                        <span id="admin-name" style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">Administrator</span>
+                    </div>
+                    <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                        <span class="icon" id="theme-icon">🌙</span>
+                        <span id="theme-text">Dark</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="logout()" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        🚪 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="dashboard-header">
+        <div class="container">
+            <h1>🏛️ Administrative Dashboard</h1>
+            <p>Comprehensive complaint management and ward monitoring system</p>
+            <div class="last-updated">Last updated: <span id="current-time"></span></div>
+        </div>
+    </section>
+
+    <!-- Summary Statistics -->
+    <section class="summary-section">
+        <div class="container">
+            <div class="summary-grid">
+                <div class="summary-card critical">
+                    <h3>Total Complaints</h3>
+                    <div class="summary-number" id="total-complaints">0</div>
+                    <p>All registered</p>
+                </div>
+                <div class="summary-card warning">
+                    <h3>Pending Review</h3>
+                    <div class="summary-number" id="pending-complaints">0</div>
+                    <p>Requires action</p>
+                </div>
+                <div class="summary-card info">
+                    <h3>In Progress</h3>
+                    <div class="summary-number" id="progress-complaints">0</div>
+                    <p>Being resolved</p>
+                </div>
+                <div class="summary-card stable">
+                    <h3>Resolved</h3>
+                    <div class="summary-number" id="resolved-complaints">0</div>
+                    <p>Completed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title" style="margin-bottom: 2rem;">Dashboard Overview</h2>
+            
+            <!-- Quick Access Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+                <!-- Citizen Dashboard Access -->
+                <div class="feature-card" style="background: linear-gradient(135deg, rgba(21, 96, 189, 0.1) 0%, rgba(21, 96, 189, 0.05) 100%); border: 2px solid var(--primary-blue);">
+                    <h3 style="color: var(--primary-blue);">👤 Citizen Dashboard</h3>
+                    <p style="margin-bottom: 1.5rem;">Access all citizen tools including flood risk maps, complaint registration, and tracking</p>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="map.html" class="btn btn-secondary" style="width: 100%;">🗺️ Flood Risk Map</a>
+                        <a href="complaint.html" class="btn btn-secondary" style="width: 100%;">📝 Register Complaint</a>
+                        <a href="track.html" class="btn btn-secondary" style="width: 100%;">🔍 Track Complaint</a>
+                        <a href="my-complaints.html" class="btn btn-secondary" style="width: 100%;">📋 My Complaints</a>
+                    </div>
+                </div>
+
+                <!-- Admin Dashboard 1: Complaints Overview -->
+                <div class="feature-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%); border: 2px solid var(--warning-orange);">
+                    <h3 style="color: var(--warning-orange);">📊 Complaints Overview</h3>
+                    <p style="margin-bottom: 1.5rem;">View and manage all complaints with advanced filtering and search capabilities</p>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.875rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>High Priority:</span>
+                            <strong id="high-priority-count">0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Escalated:</span>
+                            <strong id="escalated-count">0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Avg. Resolution:</span>
+                            <strong>3-5 days</strong>
+                        </div>
+                    </div>
+                    <a href="admin-complaints.html" class="btn btn-warning" style="width: 100%;">View All Complaints →</a>
+                </div>
+
+                <!-- Admin Dashboard 2: Complaint Manager -->
+                <div class="feature-card" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%); border: 2px solid var(--danger-red);">
+                    <h3 style="color: var(--danger-red);">⚡ Complaint Progress Manager</h3>
+                    <p style="margin-bottom: 1.5rem;">Update complaint status, assign departments, and manage resolution timeline</p>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                        <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <strong>Quick Actions:</strong>
+                        </div>
+                        <ul style="font-size: 0.875rem; margin-left: 1.25rem; color: var(--text-secondary);">
+                            <li>Update status</li>
+                            <li>Assign department</li>
+                            <li>Add officer comments</li>
+                            <li>Set resolution ETA</li>
+                        </ul>
+                    </div>
+                    <a href="admin-complaints.html" class="btn btn-danger" style="width: 100%;">Manage Complaints →</a>
+                </div>
+            </div>
+
+            <!-- Ward Monitoring Section -->
+            <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-primary);">🗺️ High Risk Wards Monitoring</h3>
+            <div style="background: var(--bg-secondary); padding: 2rem; border-radius: var(--radius-xl); margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <div style="text-align: center; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border-left: 4px solid var(--danger-red);">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔴</div>
+                        <div style="font-size: 2rem; font-weight: 800; color: var(--danger-red); margin-bottom: 0.5rem;">5</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Critical Risk Wards</div>
+                        <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem;">Risk Score &gt; 80</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border-left: 4px solid var(--warning-orange);">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🟡</div>
+                        <div style="font-size: 2rem; font-weight: 800; color: var(--warning-orange); margin-bottom: 0.5rem;">8</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">High Risk Wards</div>
+                        <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem;">Risk Score 50-80</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border-left: 4px solid var(--success-green);">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🟢</div>
+                        <div style="font-size: 2rem; font-weight: 800; color: var(--success-green); margin-bottom: 0.5rem;">7</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Low Risk Wards</div>
+                        <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem;">Risk Score &lt; 50</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border-left: 4px solid var(--primary-blue);">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                        <div style="font-size: 2rem; font-weight: 800; color: var(--primary-blue); margin-bottom: 0.5rem;">20</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Total Wards</div>
+                        <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.5rem;">Under monitoring</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <a href="authority.html" class="btn btn-primary">View Full Authority Dashboard →</a>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-primary);">📝 Recent Complaints Activity</h3>
+            <div id="recent-activity-container">
+                <!-- Loaded dynamically -->
+            </div>
+            <div id="no-activity" class="empty-state">
+                <div class="empty-icon">📭</div>
+                <h3 class="empty-title">No Recent Activity</h3>
+                <p class="empty-message">No complaints have been registered yet</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System | Municipal Corporation of Delhi</p>
+            <p>Administrative Access | Authorized Personnel Only</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="complaints.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            loadAdminInfo();
+            loadStats();
+            loadRecentActivity();
+            updateTimestamp();
+        });
+
+        function loadAdminInfo() {
+            const session = SessionManager.getSession();
+            if (session) {
+                document.getElementById('admin-name').textContent = session.username || 'Administrator';
+            }
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('en-IN', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
+        }
+
+        function loadStats() {
+            let allComplaints = [];
+            try {
+                const complaintsData = localStorage.getItem('delhiComplaints') || localStorage.getItem('complaints');
+                if (complaintsData) {
+                    allComplaints = JSON.parse(complaintsData);
+                }
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+            }
+
+            const total = allComplaints.length;
+            const pending = allComplaints.filter(c => c.status === 'Pending Verification' || c.status === 'Verified').length;
+            const inProgress = allComplaints.filter(c => c.status === 'In Progress').length;
+            const resolved = allComplaints.filter(c => c.status === 'Resolved').length;
+            const highPriority = allComplaints.filter(c => c.severity === 'High').length;
+            const escalated = allComplaints.filter(c => c.escalated).length;
+
+            setTimeout(() => {
+                animateCounter(document.getElementById('total-complaints'), total, 1000);
+                animateCounter(document.getElementById('pending-complaints'), pending, 1000);
+                animateCounter(document.getElementById('progress-complaints'), inProgress, 1000);
+                animateCounter(document.getElementById('resolved-complaints'), resolved, 1000);
+                animateCounter(document.getElementById('high-priority-count'), highPriority, 1000);
+                animateCounter(document.getElementById('escalated-count'), escalated, 1000);
+            }, 300);
+        }
+
+        function loadRecentActivity() {
+            let allComplaints = [];
+            try {
+                const complaintsData = localStorage.getItem('delhiComplaints') || localStorage.getItem('complaints');
+                if (complaintsData) {
+                    allComplaints = JSON.parse(complaintsData);
+                }
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+            }
+
+            const container = document.getElementById('recent-activity-container');
+            const noActivity = document.getElementById('no-activity');
+
+            if (allComplaints.length === 0) {
+                container.style.display = 'none';
+                noActivity.style.display = 'block';
+                return;
+            }
+
+            container.style.display = 'block';
+            noActivity.style.display = 'none';
+
+            // Show latest 5 complaints
+            const recent = allComplaints.slice(-5).reverse();
+
+            container.innerHTML = recent.map(c => `
+                <div class="complaint-card" style="margin-bottom: 1rem;">
+                    <div class="complaint-header">
+                        <div>
+                            <div class="complaint-id">${c.id}</div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                                <span class="badge badge-${c.status.toLowerCase().replace(/\s+/g, '-')}">${c.status}</span>
+                                <span class="badge badge-${c.severity.toLowerCase()}">${c.severity}</span>
+                                ${c.escalated ? '<span class="badge badge-danger">Escalated</span>' : ''}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.875rem; color: var(--text-tertiary);">Filed on</div>
+                            <div style="font-weight: 600; font-size: 0.875rem;">${formatDateShort(c.createdAt)}</div>
+                        </div>
+                    </div>
+                    <div class="complaint-meta">
+                        <div class="complaint-meta-item">📁 ${c.category}</div>
+                        <div class="complaint-meta-item">📍 ${c.ward}, ${c.zone}</div>
+                        <div class="complaint-meta-item">👤 ${c.citizen.name}</div>
+                        ${c.department ? `<div class="complaint-meta-item">🏢 ${c.department}</div>` : ''}
+                    </div>
+                    <div class="complaint-description">
+                        ${c.description.substring(0, 120)}${c.description.length > 120 ? '...' : ''}
+                    </div>
+                    <div class="complaint-actions">
+                        <a href="admin-complaints.html?id=${c.id}" class="btn btn-primary">Manage Complaint</a>
+                        <a href="track.html?id=${c.id}" class="btn btn-secondary">View Details</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Dropdown functionality
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const dropdown = this.parentElement;
+                const isOpen = dropdown.classList.contains('open');
+                
+                // Close all dropdowns
+                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+                
+                // Toggle current dropdown
+                if (!isOpen) {
+                    dropdown.classList.add('open');
+                }
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+            }
+        });
+    </script>
+
+    <style>
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: var(--text-sm);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            display: block;
+        }
+
+        .dropdown-toggle:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 0.5rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            min-width: 220px;
+            z-index: var(--z-dropdown);
+            padding: 0.5rem;
+        }
+
+        .dropdown.open .dropdown-menu {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            font-size: 0.875rem;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                border: none;
+                margin-top: 0;
+                padding-left: 1rem;
+            }
+        }
+    </style>
+</body>
+</html>

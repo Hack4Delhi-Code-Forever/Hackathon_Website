@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - Delhi Flood Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); padding: 2rem;">
+        <div class="container" style="max-width: 500px;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💧</div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;" id="portal-title">Citizen Portal</h1>
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">Sign in or create an account to continue</p>
+                <a href="portal.html" style="display: inline-block; margin-top: 0.5rem; color: var(--primary-blue); font-size: 0.875rem;">
+                    ← Change Portal Type
+                </a>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display: flex; background: var(--bg-primary); border-radius: var(--radius-lg); padding: 0.375rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+                <button class="auth-tab active" onclick="switchTab('login')" id="login-tab">
+                    Login
+                </button>
+                <button class="auth-tab" onclick="switchTab('signup')" id="signup-tab">
+                    Sign Up
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form active">
+                <div class="form-card">
+                    <!-- Citizen Login -->
+                    <form id="citizen-login-form" class="role-form">
+                        <div class="form-group">
+                            <label class="form-label required">Phone Number</label>
+                            <input type="tel" id="citizen-login-phone" class="form-input" placeholder="10-digit mobile number" pattern="[0-9]{10}" required maxlength="10">
+                            <small class="form-help">Enter your registered phone number</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">PIN / Password</label>
+                            <input type="password" id="citizen-login-pin" class="form-input" placeholder="Enter your PIN" required>
+                            <small class="form-help">Demo: Use PIN 1234 for any phone number</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                            🔓 Login
+                        </button>
+                    </form>
+
+                    <!-- Admin Login -->
+                    <form id="admin-login-form" class="role-form hidden">
+                        <div class="form-group">
+                            <label class="form-label required">Username</label>
+                            <input type="text" id="admin-login-username" class="form-input" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Password</label>
+                            <input type="password" id="admin-login-password" class="form-input" placeholder="Enter password" required>
+                            <small class="form-help">Demo: username: admin, password: admin123</small>
+                        </div>
+
+                        <div style="text-align: right; margin-top: 0.5rem;">
+                            <a href="#" onclick="showForgotPassword(); return false;" style="font-size: 0.875rem; color: var(--primary-blue);">
+                                Forgot Password?
+                            </a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                            🔓 Login as Admin
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form" class="auth-form">
+                <div class="form-card">
+                    <!-- Citizen Signup -->
+                    <form id="citizen-signup-form" class="role-form">
+                        <div class="form-group">
+                            <label class="form-label required">Full Name</label>
+                            <input type="text" id="citizen-signup-name" class="form-input" placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Phone Number</label>
+                            <input type="tel" id="citizen-signup-phone" class="form-input" placeholder="10-digit mobile number" pattern="[0-9]{10}" required maxlength="10">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email (Optional)</label>
+                            <input type="email" id="citizen-signup-email" class="form-input" placeholder="your@email.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Create PIN</label>
+                            <input type="password" id="citizen-signup-pin" class="form-input" placeholder="Create a 4-6 digit PIN" required minlength="4">
+                            <small class="form-help">Create a secure PIN for login</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 1rem;">
+                            ✅ Create Account
+                        </button>
+                    </form>
+
+                    <!-- Admin Signup -->
+                    <form id="admin-signup-form" class="role-form hidden">
+                        <div class="form-group">
+                            <label class="form-label required">Username</label>
+                            <input type="text" id="admin-signup-username" class="form-input" placeholder="Choose a username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Phone Number</label>
+                            <input type="tel" id="admin-signup-phone" class="form-input" placeholder="10-digit mobile number" pattern="[0-9]{10}" required maxlength="10">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Create Password</label>
+                            <input type="password" id="admin-signup-password" class="form-input" placeholder="Minimum 6 characters" required minlength="6">
+                            <small class="form-help">Use a strong password with letters and numbers</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 1rem;">
+                            ✅ Create Admin Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Forgot Password Section (Admin Only) -->
+            <div id="forgot-password-section" class="auth-form hidden">
+                <div class="form-card">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔑 Reset Password</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem;">Enter your username and registered phone</p>
+                    </div>
+
+                    <form id="forgot-password-form">
+                        <div class="form-group">
+                            <label class="form-label required">Admin Username</label>
+                            <input type="text" id="reset-username" class="form-input" placeholder="Enter your username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Registered Phone</label>
+                            <input type="tel" id="reset-phone" class="form-input" placeholder="10-digit phone number" pattern="[0-9]{10}" required maxlength="10">
+                        </div>
+
+                        <div id="new-password-fields" class="hidden">
+                            <div class="form-group">
+                                <label class="form-label required">New Password</label>
+                                <input type="password" id="reset-new-password" class="form-input" placeholder="Minimum 6 characters" minlength="6">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label required">Confirm Password</label>
+                                <input type="password" id="reset-confirm-password" class="form-input" placeholder="Re-enter password" minlength="6">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                            <button type="button" class="btn btn-secondary" onclick="hideForgotPassword()" style="flex: 1;">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="reset-submit-btn" style="flex: 1;">
+                                Verify
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        let selectedRole = 'citizen';
+        let resetStep = 1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            
+            // Get selected role
+            selectedRole = DataAccess.getSelectedRole() || 'citizen';
+            updateForRole();
+
+            // Setup form handlers
+            document.getElementById('citizen-login-form').addEventListener('submit', handleCitizenLogin);
+            document.getElementById('citizen-signup-form').addEventListener('submit', handleCitizenSignup);
+            document.getElementById('admin-login-form').addEventListener('submit', handleAdminLogin);
+            document.getElementById('admin-signup-form').addEventListener('submit', handleAdminSignup);
+            document.getElementById('forgot-password-form').addEventListener('submit', handleForgotPassword);
+        });
+
+        function updateForRole() {
+            const portalTitle = document.getElementById('portal-title');
+            
+            if (selectedRole === 'admin') {
+                portalTitle.innerHTML = '🏛️ Administrative Portal';
+                document.getElementById('citizen-login-form').classList.add('hidden');
+                document.getElementById('admin-login-form').classList.remove('hidden');
+                document.getElementById('citizen-signup-form').classList.add('hidden');
+                document.getElementById('admin-signup-form').classList.remove('hidden');
+            } else {
+                portalTitle.innerHTML = '👤 Citizen Portal';
+                document.getElementById('citizen-login-form').classList.remove('hidden');
+                document.getElementById('admin-login-form').classList.add('hidden');
+                document.getElementById('citizen-signup-form').classList.remove('hidden');
+                document.getElementById('admin-signup-form').classList.add('hidden');
+            }
+        }
+
+        function switchTab(tab) {
+            const loginTab = document.getElementById('login-tab');
+            const signupTab = document.getElementById('signup-tab');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const forgotSection = document.getElementById('forgot-password-section');
+
+            forgotSection.classList.add('hidden');
+
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.classList.add('active');
+                signupForm.classList.remove('active');
+            } else {
+                loginTab.classList.remove('active');
+                signupTab.classList.add('active');
+                loginForm.classList.remove('active');
+                signupForm.classList.add('active');
+            }
+        }
+
+        function handleCitizenLogin(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('citizen-login-phone').value;
+            const pin = document.getElementById('citizen-login-pin').value;
+
+            try {
+                const session = CitizenAuth.login(phone, pin);
+                SessionManager.createSession(session);
+                showToast('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'citizen-home.html';
+                }, 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function handleCitizenSignup(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('citizen-signup-name').value;
+            const phone = document.getElementById('citizen-signup-phone').value;
+            const email = document.getElementById('citizen-signup-email').value;
+            const pin = document.getElementById('citizen-signup-pin').value;
+
+            try {
+                const session = CitizenAuth.signup(name, phone, pin, email);
+                SessionManager.createSession(session);
+                showToast('Account created successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'citizen-home.html';
+                }, 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('admin-login-username').value;
+            const password = document.getElementById('admin-login-password').value;
+
+            try {
+                const session = AdminAuth.login(username, password);
+                SessionManager.createSession(session);
+                showToast('Admin login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'admin-home.html';
+                }, 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function handleAdminSignup(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('admin-signup-username').value;
+            const phone = document.getElementById('admin-signup-phone').value;
+            const password = document.getElementById('admin-signup-password').value;
+
+            try {
+                const session = AdminAuth.signup(username, phone, password);
+                SessionManager.createSession(session);
+                showToast('Admin account created! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'admin-home.html';
+                }, 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function showForgotPassword() {
+            document.getElementById('login-form').classList.remove('active');
+            document.getElementById('signup-form').classList.remove('active');
+            document.getElementById('forgot-password-section').classList.add('active');
+            resetStep = 1;
+            document.getElementById('new-password-fields').classList.add('hidden');
+            document.getElementById('reset-submit-btn').textContent = 'Verify';
+        }
+
+        function hideForgotPassword() {
+            document.getElementById('forgot-password-section').classList.remove('active');
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('forgot-password-form').reset();
+            resetStep = 1;
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('reset-username').value;
+            const phone = document.getElementById('reset-phone').value;
+
+            if (resetStep === 1) {
+                // Verify username and phone
+                const adminUsers = DataAccess.getAdminUsers();
+                const user = adminUsers.find(u => u.username === username && u.phone === phone);
+
+                if (!user) {
+                    showToast('No admin account found with this username and phone', 'error');
+                    return;
+                }
+
+                // Show password fields
+                document.getElementById('new-password-fields').classList.remove('hidden');
+                document.getElementById('reset-submit-btn').textContent = 'Reset Password';
+                showToast('Verified! Now create a new password', 'success');
+                resetStep = 2;
+            } else {
+                // Reset password
+                const newPassword = document.getElementById('reset-new-password').value;
+                const confirmPassword = document.getElementById('reset-confirm-password').value;
+
+                if (newPassword !== confirmPassword) {
+                    showToast('Passwords do not match', 'error');
+                    return;
+                }
+
+                try {
+                    AdminAuth.resetPassword(username, phone, newPassword);
+                    showToast('Password updated successfully!', 'success');
+                    setTimeout(() => {
+                        hideForgotPassword();
+                        document.getElementById('admin-login-username').value = username;
+                    }, 1000);
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .auth-tab.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</body>
+</html>

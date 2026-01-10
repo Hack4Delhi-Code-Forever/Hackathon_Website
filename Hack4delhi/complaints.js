@@ -48,12 +48,25 @@ const DEPARTMENTS = ['MCD', 'PWD', 'DJB'];
 // ========================================
 
 function getComplaints() {
-    const complaints = localStorage.getItem('complaints');
+    // Use new key 'delhiComplaints' for consistency with auth system
+    let complaints = localStorage.getItem('delhiComplaints');
+    
+    // Migration: Check old key if new key doesn't exist
+    if (!complaints) {
+        complaints = localStorage.getItem('complaints');
+        if (complaints) {
+            // Migrate to new key
+            localStorage.setItem('delhiComplaints', complaints);
+            localStorage.removeItem('complaints');
+        }
+    }
+    
     return complaints ? JSON.parse(complaints) : [];
 }
 
 function saveComplaints(complaints) {
-    localStorage.setItem('complaints', JSON.stringify(complaints));
+    // Replace localStorage with API call here
+    localStorage.setItem('delhiComplaints', JSON.stringify(complaints));
 }
 
 function getComplaint(id) {

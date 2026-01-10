@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delhi Civic Flood Management Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Hero Section with Portal Selection -->
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary-blue) 0%, #0d47a1 100%); position: relative; overflow: hidden;">
+        <!-- Background Pattern -->
+        <div style="position: absolute; inset: 0; background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events: none;"></div>
+        
+        <div class="container" style="position: relative; z-index: 1;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">💧</div>
+                <h1 style="font-size: 3rem; font-weight: 800; color: white; margin-bottom: 1rem; letter-spacing: -0.02em;">
+                    Delhi Civic Flood Management Portal
+                </h1>
+                <p style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.9); max-width: 600px; margin: 0 auto;">
+                    Real-time water-logging monitoring and citizen complaint system
+                </p>
+            </div>
+
+            <!-- Portal Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 800px; margin: 0 auto;">
+                <!-- Citizen Portal Card -->
+                <div class="portal-card" onclick="selectRole('citizen')" style="cursor: pointer;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">👤</div>
+                        <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
+                            Citizen Portal
+                        </h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+                            Register complaints, track status, view flood risk maps, and access civic services
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; text-align: left; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>✅</span> Register civic complaints
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>📊</span> Track complaint status
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>🗺️</span> View flood risk maps
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>📱</span> Real-time updates
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; padding: 0.875rem; font-size: 1rem; background: var(--primary-blue); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            Continue as Citizen →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Administrative Portal Card -->
+                <div class="portal-card" onclick="selectRole('admin')" style="cursor: pointer;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏛️</div>
+                        <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
+                            Administrative Portal
+                        </h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+                            Manage complaints, monitor wards, and access administrative dashboards
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; text-align: left; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>📋</span> Manage all complaints
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>📊</span> Analytics dashboard
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>🗺️</span> Ward monitoring
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <span>⚡</span> Priority management
+                            </div>
+                        </div>
+                        <button class="btn btn-warning" style="width: 100%; padding: 0.875rem; font-size: 1rem; background: var(--warning-orange); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            Continue as Admin →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Access Link -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="index.html" style="color: rgba(255, 255, 255, 0.9); font-size: 0.875rem; text-decoration: underline; transition: opacity 0.2s;">
+                    ← Back to Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="background: rgba(15, 23, 42, 0.95); color: rgba(255, 255, 255, 0.7); padding: 2rem 0; text-align: center;">
+        <div class="container">
+            <p style="margin-bottom: 0.5rem; font-size: 0.875rem;">&copy; 2026 Delhi Water-Logging Monitoring System | Government Project</p>
+            <p style="margin: 0; font-size: 0.875rem;">Municipal Corporation of Delhi (MCD)</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            
+            // Add hover effects to cards
+            const cards = document.querySelectorAll('.portal-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Check if already logged in
+            const session = SessionManager.getSession();
+            if (session) {
+                if (session.role === 'admin') {
+                    window.location.href = 'admin-home.html';
+                } else {
+                    window.location.href = 'citizen-home.html';
+                }
+            }
+        });
+
+        function selectRole(role) {
+            DataAccess.setSelectedRole(role);
+            window.location.href = 'auth.html';
+        }
+    </script>
+
+    <style>
+        .portal-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .portal-card:hover {
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+        }
+
+        .portal-card button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] .portal-card {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem !important;
+            }
+            
+            .portal-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</body>
+</html>

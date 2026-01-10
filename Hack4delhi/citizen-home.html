@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard - Delhi Water-Logging System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="nav-logo">💧</span>
+                <h2>Delhi Water-Logging System</h2>
+            </div>
+            <div class="nav-content">
+                <div class="nav-links">
+                    <a href="citizen-home.html" class="active">Home</a>
+                    <a href="map.html">Flood Risk Map</a>
+                    <a href="complaint.html">Register Complaint</a>
+                    <a href="track.html">Track Complaint</a>
+                    <a href="my-complaints.html">My Complaints</a>
+                </div>
+                <div class="nav-controls">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-full); border: 1px solid var(--border-color);">
+                        <span style="font-size: 1rem;">👤</span>
+                        <span id="user-name" style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);"></span>
+                    </div>
+                    <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                        <span class="icon" id="theme-icon">🌙</span>
+                        <span id="theme-text">Dark</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="logout()" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        🚪 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" style="padding: 4rem 0;">
+        <div class="container">
+            <h1>Welcome to Citizen Portal</h1>
+            <p class="subtitle">Monitor flood risks, register complaints, and track civic issues in your area</p>
+        </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="section" style="padding-top: 2rem;">
+        <div class="container">
+            <div class="summary-grid">
+                <div class="summary-card info">
+                    <h3>My Complaints</h3>
+                    <div class="summary-number" id="my-complaints-count">0</div>
+                    <p>Total filed</p>
+                </div>
+                <div class="summary-card warning">
+                    <h3>Pending</h3>
+                    <div class="summary-number" id="pending-count">0</div>
+                    <p>In progress</p>
+                </div>
+                <div class="summary-card stable">
+                    <h3>Resolved</h3>
+                    <div class="summary-number" id="resolved-count">0</div>
+                    <p>Completed</p>
+                </div>
+                <div class="summary-card critical">
+                    <h3>High Risk Zones</h3>
+                    <div class="summary-number">23</div>
+                    <p>Across Delhi</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title" style="margin-bottom: 2rem;">Quick Actions</h2>
+            <div class="features-grid">
+                <div class="feature-card" onclick="window.location.href='map.html'" style="cursor: pointer;">
+                    <h3>🗺️ Flood Risk Map</h3>
+                    <p>View real-time water-logging hotspots and risk levels across Delhi wards</p>
+                    <a href="map.html" class="btn btn-primary" style="margin-top: 1rem;">View Map</a>
+                </div>
+
+                <div class="feature-card" onclick="window.location.href='complaint.html'" style="cursor: pointer;">
+                    <h3>📝 Register Complaint</h3>
+                    <p>Report water-logging, drainage issues, and other civic problems with photo evidence</p>
+                    <a href="complaint.html" class="btn btn-primary" style="margin-top: 1rem;">File Complaint</a>
+                </div>
+
+                <div class="feature-card" onclick="window.location.href='track.html'" style="cursor: pointer;">
+                    <h3>🔍 Track Complaint</h3>
+                    <p>Monitor the status of your complaints and view resolution timeline</p>
+                    <a href="track.html" class="btn btn-primary" style="margin-top: 1rem;">Track Status</a>
+                </div>
+
+                <div class="feature-card" onclick="window.location.href='my-complaints.html'" style="cursor: pointer;">
+                    <h3>📋 My Complaints</h3>
+                    <p>View all complaints filed from this device with detailed status updates</p>
+                    <a href="my-complaints.html" class="btn btn-primary" style="margin-top: 1rem;">View All</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Complaints -->
+    <section class="section" style="background-color: var(--bg-secondary);">
+        <div class="container">
+            <h2 class="section-title" style="margin-bottom: 2rem;">Recent Complaints</h2>
+            <div id="recent-complaints-container">
+                <!-- Loaded dynamically -->
+            </div>
+            <div id="no-complaints" class="empty-state" style="padding: 3rem;">
+                <div class="empty-icon">📭</div>
+                <h3 class="empty-title">No Complaints Yet</h3>
+                <p class="empty-message">You haven't filed any complaints. Start by registering a civic issue.</p>
+                <a href="complaint.html" class="btn btn-primary">Register First Complaint</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Important Information -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title" style="margin-bottom: 2rem;">Important Information</h2>
+            <div style="display: grid; gap: 1.5rem;">
+                <div class="alert alert-warning">
+                    <span class="alert-icon">⚠️</span>
+                    <div class="alert-content">
+                        <div class="alert-title">Monsoon Season Alert</div>
+                        <div class="alert-message">Heavy rainfall expected in next 48 hours. Report water-logging incidents immediately for faster response.</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">ℹ️</span>
+                    <div class="alert-content">
+                        <div class="alert-title">Emergency Helpline</div>
+                        <div class="alert-message">For urgent assistance, call MCD Control Room: 1800-11-8181 (Toll Free)</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <span class="alert-icon">✅</span>
+                    <div class="alert-content">
+                        <div class="alert-title">System Status</div>
+                        <div class="alert-message">All civic services are operational. Average complaint resolution time: 3-5 days.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Delhi Water-Logging Monitoring System | Municipal Corporation of Delhi</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script src="complaints.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            loadUserInfo();
+            loadStats();
+            loadRecentComplaints();
+        });
+
+        function loadUserInfo() {
+            const session = SessionManager.getSession();
+            if (session) {
+                document.getElementById('user-name').textContent = session.name || 'Citizen';
+            }
+        }
+
+        function loadStats() {
+            // Update complaint stats based on localStorage (using new key)
+            let allComplaints = [];
+            try {
+                // Try new key first
+                const complaintsData = localStorage.getItem('delhiComplaints');
+                if (complaintsData) {
+                    allComplaints = JSON.parse(complaintsData);
+                } else {
+                    // Fallback to old key
+                    const oldData = localStorage.getItem('complaints');
+                    if (oldData) {
+                        allComplaints = JSON.parse(oldData);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+            }
+
+            const myCount = allComplaints.length;
+            const pendingCount = allComplaints.filter(c => 
+                c.status === 'Pending Verification' || c.status === 'Verified' || c.status === 'In Progress'
+            ).length;
+            const resolvedCount = allComplaints.filter(c => c.status === 'Resolved').length;
+
+            animateCounter(document.getElementById('my-complaints-count'), myCount, 1000);
+            animateCounter(document.getElementById('pending-count'), pendingCount, 1000);
+            animateCounter(document.getElementById('resolved-count'), resolvedCount, 1000);
+        }
+
+        function loadRecentComplaints() {
+            let allComplaints = [];
+            try {
+                const complaintsData = localStorage.getItem('delhiComplaints') || localStorage.getItem('complaints');
+                if (complaintsData) {
+                    allComplaints = JSON.parse(complaintsData);
+                }
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+            }
+
+            const container = document.getElementById('recent-complaints-container');
+            const noComplaints = document.getElementById('no-complaints');
+
+            if (allComplaints.length === 0) {
+                container.style.display = 'none';
+                noComplaints.style.display = 'block';
+                return;
+            }
+
+            container.style.display = 'block';
+            noComplaints.style.display = 'none';
+
+            // Show latest 3 complaints
+            const recent = allComplaints.slice(-3).reverse();
+
+            container.innerHTML = recent.map(c => `
+                <div class="complaint-card">
+                    <div class="complaint-header">
+                        <div>
+                            <div class="complaint-id">${c.id}</div>
+                            <span class="badge badge-${c.status.toLowerCase().replace(/\s+/g, '-')}">${c.status}</span>
+                        </div>
+                        <div style="text-align: right; font-size: 0.875rem; color: var(--text-tertiary);">
+                            ${formatDateShort(c.createdAt)}
+                        </div>
+                    </div>
+                    <div class="complaint-meta">
+                        <div class="complaint-meta-item">📁 ${c.category}</div>
+                        <div class="complaint-meta-item">📍 ${c.ward}</div>
+                        <div class="complaint-meta-item">
+                            <span class="badge badge-${c.severity.toLowerCase()}">${c.severity}</span>
+                        </div>
+                    </div>
+                    <div class="complaint-description">
+                        ${c.description.substring(0, 100)}${c.description.length > 100 ? '...' : ''}
+                    </div>
+                    <div class="complaint-actions">
+                        <a href="track.html?id=${c.id}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
