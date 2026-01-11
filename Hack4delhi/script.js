@@ -94,10 +94,60 @@ function updateThemeButton(theme) {
     }
 }
 
+/**
+ * Toggle password visibility
+ * @param {string} inputId - ID of the password input field
+ * @param {HTMLElement} btnEl - Button element that toggles visibility
+ */
+function togglePassword(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    const isPassword = input.type === "password";
+    input.type = isPassword ? "text" : "password";
+    
+    if (btnEl) {
+        btnEl.textContent = isPassword ? "Hide" : "Show";
+    }
+}
+
+/**
+ * Toggle hamburger menu
+ */
+function toggleHamburger() {
+    const hamburger = document.querySelector('.hamburger');
+    const navContent = document.querySelector('.nav-content');
+    
+    if (hamburger && navContent) {
+        hamburger.classList.toggle('active');
+        navContent.classList.toggle('active');
+    }
+}
+
 // Initialize theme and language on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeTheme();
     initializeLanguage();
+    
+    // Setup hamburger menu
+    const hamburger = document.querySelector('.hamburger');
+    if (hamburger) {
+        hamburger.addEventListener('click', toggleHamburger);
+    }
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const navbar = document.querySelector('.navbar');
+        const hamburger = document.querySelector('.hamburger');
+        const navContent = document.querySelector('.nav-content');
+        
+        if (navbar && hamburger && navContent && 
+            navContent.classList.contains('active') &&
+            !navbar.contains(event.target)) {
+            hamburger.classList.remove('active');
+            navContent.classList.remove('active');
+        }
+    });
     initializeAnimations();
 });
 
