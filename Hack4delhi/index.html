@@ -161,5 +161,19 @@
     <script src="translation.js"></script>
     <script src="data.js"></script>
     <script src="script.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Redirect already logged-in users to their dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            const session = SessionManager.getSession();
+            if (session) {
+                if (session.role === 'admin') {
+                    window.location.href = 'admin-home.html';
+                } else if (session.role === 'citizen') {
+                    window.location.href = 'citizen-home.html';
+                }
+            }
+        });
+    </script>
 </body>
 </html>

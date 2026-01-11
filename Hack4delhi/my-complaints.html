@@ -8,28 +8,8 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <span class="nav-logo">💧</span>
-                <h2>Delhi Water-Logging System</h2>
-            </div>
-            <div class="nav-content">
-                <div class="nav-links">
-                    <a href="index.html">Home</a>
-                    <a href="map.html">Map View</a>
-                    <a href="authority.html">Dashboard</a>
-                    <a href="complaint.html">Register Complaint</a>
-                    <a href="track.html">Track Complaint</a>
-                    <a href="my-complaints.html" class="active">My Complaints</a>
-                    <a href="admin-complaints.html">Manage Complaints</a>
-                </div>
-                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
-                    <span class="icon" id="theme-icon">🌙</span>
-                    <span id="theme-text">Dark</span>
-                </button>
-            </div>
-        </div>
+    <nav class="navbar" id="main-navbar">
+        <!-- Navigation will be dynamically loaded based on role -->
     </nav>
 
     <!-- Page Header -->
@@ -105,7 +85,7 @@
         <div class="modal" style="max-width: 800px;">
             <div class="modal-header">
                 <h3 class="modal-title" id="modal-title">Complaint Details</h3>
-                <button class="modal-close" onclick="closeModal()">✖️</button>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modal-content">
                 <!-- Content loaded dynamically -->
@@ -127,6 +107,7 @@
     <script src="auth.js"></script>
     <script src="data.js"></script>
     <script src="script.js"></script>
+    <script src="auth.js"></script>
     <script src="complaints.js"></script>
     <script>
         let allComplaints = [];
@@ -134,6 +115,7 @@
         let currentFilter = 'all';
 
         document.addEventListener('DOMContentLoaded', function() {
+            initializeRoleBasedNavigation('my-complaints');
             initializeTheme();
             loadComplaints();
         });
@@ -350,6 +332,82 @@
 
         function closeModal() {
             document.getElementById('detail-modal').classList.remove('active');
+        }
+
+        function initializeRoleBasedNavigation(activePage) {
+            const session = SessionManager.getSession();
+            const navbar = document.getElementById('main-navbar');
+            
+            if (!session) {
+                window.location.href = 'portal.html';
+                return;
+            }
+
+            if (session.role === 'admin') {
+                navbar.innerHTML = `
+                    <div class="container">
+                        <div class="nav-brand">
+                            <span class="nav-logo">💧</span>
+                            <h2>Delhi Water-Logging System - Admin</h2>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-links">
+                                <a href="admin-home.html">Admin Home</a>
+                                <a href="map.html">🗺️ Flood Map</a>
+                                <a href="complaint.html">📝 Register Complaint</a>
+                                <a href="track.html">🔍 Track Complaint</a>
+                                <a href="my-complaints.html" class="${activePage === 'my-complaints' ? 'active' : ''}">📋 All Complaints</a>
+                                <a href="admin-complaints.html">⚡ Manage Complaints</a>
+                                <a href="authority.html">🏛️ Authority Dashboard</a>
+                            </div>
+                            <div class="nav-controls">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-full); border: 1px solid var(--border-color);">
+                                    <span style="font-size: 1rem;">🏛️</span>
+                                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">${session.username || 'Admin'}</span>
+                                </div>
+                                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                                    <span class="icon" id="theme-icon">🌙</span>
+                                    <span id="theme-text">Dark</span>
+                                </button>
+                                <button class="btn btn-danger" onclick="logout()" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    🚪 Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                navbar.innerHTML = `
+                    <div class="container">
+                        <div class="nav-brand">
+                            <span class="nav-logo">💧</span>
+                            <h2>Delhi Water-Logging System</h2>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-links">
+                                <a href="citizen-home.html">Home</a>
+                                <a href="map.html">Flood Risk Map</a>
+                                <a href="complaint.html">Register Complaint</a>
+                                <a href="track.html">Track Complaint</a>
+                                <a href="my-complaints.html" class="${activePage === 'my-complaints' ? 'active' : ''}">My Complaints</a>
+                            </div>
+                            <div class="nav-controls">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-secondary); border-radius: var(--radius-full); border: 1px solid var(--border-color);">
+                                    <span style="font-size: 1rem;">👤</span>
+                                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">${session.name || 'Citizen'}</span>
+                                </div>
+                                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                                    <span class="icon" id="theme-icon">🌙</span>
+                                    <span id="theme-text">Dark</span>
+                                </button>
+                                <button class="btn btn-secondary" onclick="logout()" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    🚪 Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
         }
     </script>
 </body>
