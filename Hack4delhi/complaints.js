@@ -67,6 +67,7 @@ function getComplaints() {
 function saveComplaints(complaints) {
     // Replace localStorage with API call here
     localStorage.setItem('delhiComplaints', JSON.stringify(complaints));
+    console.log("Saved complaints to delhiComplaints key, count:", complaints.length);
 }
 
 function getComplaint(id) {
@@ -264,9 +265,9 @@ async function submitComplaint(formData) {
             },
             createdAt: new Date().toISOString(),
             status: 'Pending Verification',
-            department: null,
-            officerComment: null,
-            eta: null,
+            department: "",
+            officerComment: "",
+            eta: "",
             escalated: false,
             timeline: createInitialTimeline()
         };
@@ -275,8 +276,14 @@ async function submitComplaint(formData) {
         complaints.push(complaint);
         saveComplaints(complaints);
         
+        // DEBUGGING OUTPUT
+        console.log("Citizen submitted complaint:", complaintId);
+        console.log("Total complaints after submission:", complaints.length);
+        console.log("Saved to localStorage key: delhiComplaints");
+        
         return complaint;
     } catch (error) {
+        console.error("Error submitting complaint:", error);
         throw error;
     }
 }
@@ -310,36 +317,111 @@ function canEscalate(complaint) {
 }
 
 function escalateComplaint(complaintId) {
-    const complaint = updateComplaint(complaintId, { escalated: true });
+    const complaints = getComplaints();
+    const idx = complaints.findIndex(c => c.id === complaintId);
     
-    if (complaint) {
-        showToast('Complaint escalated successfully', 'success');
-        return true;
+    if (idx === -1) {
+        console.error('Complaint not found for escalation:', complaintId);
+        return false;
     }
     
-    return false;
+    // Update complaint with escalation
+    complaints[idx].escalated = true;
+    complaints[idx].updatedAt = new Date().toISOString();
+    complaints[idx].timeline = complaints[idx].timeline || [];
+    complaints[idx].timeline.push({ 
+        step: "Escalated to Higher Authority", 
+        status: "completed",
+        date: new Date().toISOString() 
+    });
+    
+    // Save to localStorage
+    saveComplaints(complaints);
+    console.log("Complaint escalated:", complaintId);
+    
+    if (typeof showToast === 'function') {
+        showToast('Complaint escalated successfully', 'success');
+    }
+    
+    return true;
+}
+
+// ========================================
+// AUDIT LOG FUNCTIONS
+// ========================================
+
+function addAuditLog(complaint, action, previousStatus, newStatus, reason = null, comment = null) {
+    const session = SessionManager ? SessionManager.getSession() : null;
+    const adminName = session && session.role === 'admin' ? (session.username || 'Admin') : 'System';
+    
+    const auditEntry = {
+        action: action,
+        byAdmin: adminName,
+        timestamp: new Date().toISOString(),
+        previousStatus: previousStatus,
+        newStatus: newStatus,
+        reason: reason,
+        comment: comment
+    };
+    
+    if (!complaint.auditLog) {
+        complaint.auditLog = [];
+    }
+    
+    complaint.auditLog.push(auditEntry);
+    
+    console.log("Audit log added:", action, "by", adminName);
 }
 
 // ========================================
 // ADMIN FUNCTIONS
 // ========================================
 
-function updateComplaintStatus(complaintId, status, comment, eta, department) {
-    const complaint = getComplaint(complaintId);
+function updateComplaintStatus(complaintId, status, comment, eta, department, rejectionReason = null) {
+    const complaints = getComplaints();
+    const idx = complaints.findIndex(c => c.id === complaintId);
     
-    if (!complaint) return null;
+    if (idx === -1) {
+        console.error('Complaint not found:', complaintId);
+        return null;
+    }
     
+    const complaint = complaints[idx];
+    const previousStatus = complaint.status;
+    
+    // Validation for rejection
+    if (status === 'Rejected') {
+        if (!rejectionReason || !comment || comment.length < 30) {
+            console.error('Rejection requires reason and comment (min 30 chars)');
+            return null;
+        }
+    }
+    
+    // Update timeline
     const timeline = updateTimeline(complaint, status);
     
-    const updates = {
-        status,
-        timeline,
-        officerComment: comment || complaint.officerComment,
-        eta: eta || complaint.eta,
-        department: department || complaint.department
-    };
+    // Add audit log entry
+    addAuditLog(complaint, 'Status Change', previousStatus, status, rejectionReason, comment);
     
-    return updateComplaint(complaintId, updates);
+    // Update complaint object
+    complaints[idx].status = status;
+    complaints[idx].timeline = timeline;
+    complaints[idx].officerComment = comment || complaint.officerComment || "";
+    complaints[idx].eta = eta || complaint.eta || "";
+    complaints[idx].department = department || complaint.department || "";
+    complaints[idx].updatedAt = new Date().toISOString();
+    
+    // Store rejection details if applicable
+    if (status === 'Rejected') {
+        complaints[idx].rejectionReason = rejectionReason;
+        complaints[idx].rejectionComment = comment;
+    }
+    
+    // Save to localStorage
+    saveComplaints(complaints);
+    console.log("Updated complaint:", complaintId, status, "- Saved to delhiComplaints");
+    
+    return complaints[idx];
 }
 
 function verifyComplaint(complaintId, department, eta) {
@@ -354,8 +436,60 @@ function resolveComplaint(complaintId, comment) {
     return updateComplaintStatus(complaintId, 'Resolved', comment);
 }
 
-function rejectComplaint(complaintId, reason) {
-    return updateComplaintStatus(complaintId, 'Rejected', reason);
+function rejectComplaint(complaintId, reason, comment) {
+    return updateComplaintStatus(complaintId, 'Rejected', comment, null, null, reason);
+}
+
+// ========================================
+// CITIZEN APPEAL FUNCTIONS
+// ========================================
+
+function raiseAppeal(complaintId, appealMessage, appealPhotoBase64 = null) {
+    const complaints = getComplaints();
+    const idx = complaints.findIndex(c => c.id === complaintId);
+    
+    if (idx === -1) {
+        console.error('Complaint not found:', complaintId);
+        return null;
+    }
+    
+    const complaint = complaints[idx];
+    
+    if (complaint.status !== 'Rejected') {
+        console.error('Can only appeal rejected complaints');
+        return null;
+    }
+    
+    if (!appealMessage || appealMessage.length < 20) {
+        console.error('Appeal message must be at least 20 characters');
+        return null;
+    }
+    
+    const previousStatus = complaint.status;
+    
+    // Update status to Appeal Raised
+    complaints[idx].status = 'Appeal Raised';
+    complaints[idx].appealMessage = appealMessage;
+    complaints[idx].appealPhotoBase64 = appealPhotoBase64;
+    complaints[idx].appealRaisedAt = new Date().toISOString();
+    complaints[idx].updatedAt = new Date().toISOString();
+    
+    // Add to timeline
+    complaints[idx].timeline = complaints[idx].timeline || [];
+    complaints[idx].timeline.push({
+        step: 'Appeal Raised',
+        status: 'current',
+        date: new Date().toISOString()
+    });
+    
+    // Add audit log
+    addAuditLog(complaints[idx], 'Appeal Raised', previousStatus, 'Appeal Raised', null, appealMessage);
+    
+    // Save to localStorage
+    saveComplaints(complaints);
+    console.log("Appeal raised for complaint:", complaintId);
+    
+    return complaints[idx];
 }
 
 // ========================================

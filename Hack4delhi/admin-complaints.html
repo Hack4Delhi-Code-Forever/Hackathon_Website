@@ -75,6 +75,7 @@
                             <option value="In Progress">In Progress</option>
                             <option value="Resolved">Resolved</option>
                             <option value="Rejected">Rejected</option>
+                            <option value="Appeal Raised">Appeal Raised</option>
                         </select>
                     </div>
 
@@ -151,6 +152,54 @@
         </div>
     </div>
 
+    <!-- Rejection Reason Modal -->
+    <div id="rejection-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Rejection Confirmation</h3>
+                <button class="modal-close" onclick="closeRejectionModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" style="margin-bottom: 1.5rem;">
+                    <span class="alert-icon">⚠️</span>
+                    <div class="alert-content">
+                        <div class="alert-message">Rejecting a complaint requires a valid reason and detailed comment to ensure accountability.</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Rejection Reason <span style="color: #dc2626;">*</span></label>
+                    <select id="rejection-reason" class="form-select">
+                        <option value="">-- Select Reason --</option>
+                        <option value="Duplicate">Duplicate</option>
+                        <option value="Insufficient Evidence">Insufficient Evidence</option>
+                        <option value="Not in Jurisdiction">Not in Jurisdiction</option>
+                        <option value="Invalid Complaint">Invalid Complaint</option>
+                        <option value="Already Resolved">Already Resolved</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div id="other-reason-container" class="form-group" style="display: none;">
+                    <label class="form-label">Specify Reason <span style="color: #dc2626;">*</span></label>
+                    <input type="text" id="other-reason-text" class="form-input" placeholder="Enter specific reason">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Detailed Comment <span style="color: #dc2626;">*</span> (Minimum 30 characters)</label>
+                    <textarea id="rejection-comment" class="form-textarea" rows="4" placeholder="Provide detailed explanation for rejection..."></textarea>
+                    <small id="char-count" style="color: var(--text-tertiary); font-size: 0.875rem;">0 / 30 characters</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeRejectionModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmRejection()" id="confirm-reject-btn" disabled>
+                    Confirm Rejection
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -189,7 +238,32 @@
         }
 
         function loadComplaints() {
-            allComplaints = getComplaints();
+            // DEBUGGING OUTPUT
+            console.log("ADMIN MANAGE READ KEY delhiComplaints =", localStorage.getItem("delhiComplaints"));
+            
+            // Load complaints from the single source of truth
+            const rawComplaints = getComplaints();
+            
+            console.log("ADMIN MANAGE complaints count =", rawComplaints.length);
+            console.log("Sample complaint data:", rawComplaints[0]);
+            
+            // Normalize all complaints with safe defaults to prevent filtering issues
+            allComplaints = rawComplaints.map(c => ({
+                ...c,
+                status: c.status || "Pending Verification",
+                severity: c.severity || "Medium",
+                escalated: !!c.escalated,
+                timeline: c.timeline || [],
+                officerComment: c.officerComment || "",
+                eta: c.eta || "",
+                department: c.department || "",
+                category: c.category || "Water Logging",
+                ward: c.ward || "Unknown",
+                zone: c.zone || "Unknown"
+            }));
+            
+            console.log("Normalized complaints:", allComplaints.length);
+            
             filteredComplaints = allComplaints;
             
             updateStats();
@@ -215,21 +289,24 @@
             const escalatedFilter = document.getElementById('escalated-filter').value;
             
             filteredComplaints = allComplaints.filter(c => {
-                const matchesSearch = 
-                    c.id.toLowerCase().includes(searchTerm) ||
-                    c.citizen.name.toLowerCase().includes(searchTerm) ||
-                    c.citizen.phone.includes(searchTerm) ||
-                    c.address.toLowerCase().includes(searchTerm) ||
-                    c.ward.toLowerCase().includes(searchTerm);
+                // Safe filtering with null checks
+                const matchesSearch = !searchTerm || (
+                    (c.id || "").toLowerCase().includes(searchTerm) ||
+                    (c.citizen?.name || "").toLowerCase().includes(searchTerm) ||
+                    (c.citizen?.phone || "").includes(searchTerm) ||
+                    (c.address || "").toLowerCase().includes(searchTerm) ||
+                    (c.ward || "").toLowerCase().includes(searchTerm)
+                );
                 
-                const matchesStatus = !statusFilter || c.status === statusFilter;
-                const matchesSeverity = !severityFilter || c.severity === severityFilter;
-                const matchesCategory = !categoryFilter || c.category === categoryFilter;
-                const matchesEscalated = !escalatedFilter || c.escalated === (escalatedFilter === 'true');
+                const matchesStatus = !statusFilter || (c.status || "Pending Verification") === statusFilter;
+                const matchesSeverity = !severityFilter || (c.severity || "Medium") === severityFilter;
+                const matchesCategory = !categoryFilter || (c.category || "") === categoryFilter;
+                const matchesEscalated = !escalatedFilter || (c.escalated || false) === (escalatedFilter === 'true');
                 
                 return matchesSearch && matchesStatus && matchesSeverity && matchesCategory && matchesEscalated;
             });
             
+            console.log("Filtered complaints count:", filteredComplaints.length);
             displayComplaints();
         }
 
@@ -237,24 +314,46 @@
             const tbody = document.getElementById('complaints-table-body');
             const emptyState = document.getElementById('empty-state');
             
+            console.log("Displaying complaints:", filteredComplaints.length);
+            
             if (filteredComplaints.length === 0) {
                 tbody.innerHTML = '';
                 emptyState.classList.remove('hidden');
+                
+                // Update empty state message
+                const emptyMessage = emptyState.querySelector('.empty-message');
+                if (emptyMessage) {
+                    if (allComplaints.length === 0) {
+                        emptyMessage.textContent = 'No complaints registered yet';
+                    } else {
+                        emptyMessage.textContent = 'No complaints match your filter criteria';
+                    }
+                }
                 return;
             }
             
             emptyState.classList.add('hidden');
             
             // Sort by priority: Escalated > High Severity > Recent
+            // Safe sorting with null checks
             const sorted = [...filteredComplaints].sort((a, b) => {
-                if (a.escalated !== b.escalated) return b.escalated ? 1 : -1;
+                // Escalated first
+                const aEscalated = !!a.escalated;
+                const bEscalated = !!b.escalated;
+                if (aEscalated !== bEscalated) return bEscalated ? 1 : -1;
                 
+                // Then by severity
                 const severityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-                if (a.severity !== b.severity) {
-                    return severityOrder[b.severity] - severityOrder[a.severity];
+                const aSeverity = severityOrder[a.severity] || 2;
+                const bSeverity = severityOrder[b.severity] || 2;
+                if (aSeverity !== bSeverity) {
+                    return bSeverity - aSeverity;
                 }
                 
-                return new Date(b.createdAt) - new Date(a.createdAt);
+                // Then by date (newest first)
+                const aDate = new Date(a.createdAt || 0);
+                const bDate = new Date(b.createdAt || 0);
+                return bDate - aDate;
             });
             
             tbody.innerHTML = sorted.map(c => `
@@ -374,6 +473,29 @@
                     </div>
                 </div>
 
+                <!-- Audit Log -->
+                ${currentComplaint.auditLog && currentComplaint.auditLog.length > 0 ? `
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;">📋 Audit Log / Action History</h4>
+                        <div style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1rem;">
+                            ${currentComplaint.auditLog.map(log => `
+                                <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 3px solid var(--primary-blue);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <strong style="color: var(--primary-blue);">${log.action}</strong>
+                                        <span style="font-size: 0.875rem; color: var(--text-tertiary);">${formatDate(log.timestamp)}</span>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                        <div>By: <strong>${log.byAdmin}</strong></div>
+                                        ${log.previousStatus ? `<div>Status: ${log.previousStatus} → ${log.newStatus}</div>` : ''}
+                                        ${log.reason ? `<div>Reason: <strong>${log.reason}</strong></div>` : ''}
+                                        ${log.comment ? `<div>Comment: "${log.comment}"</div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
                 <!-- Update Form -->
                 <div style="padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
                     <h4 style="margin-bottom: 1rem;">🔧 Update Complaint</h4>
@@ -426,8 +548,14 @@
                 </div>
             `;
             
+            // Add escalate button if eligible
+            const canEscalateFlag = canEscalate(currentComplaint);
+            
             modalFooter.innerHTML = `
                 <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                ${canEscalateFlag && !currentComplaint.escalated ? 
+                    `<button class="btn btn-danger" onclick="escalateCurrentComplaint()" style="background: #dc2626;">⚠️ Escalate</button>` 
+                    : ''}
                 <button class="btn btn-primary" onclick="updateComplaintData()">💾 Save Updates</button>
             `;
             
@@ -448,6 +576,14 @@
                 showToast('Please make at least one update', 'error');
                 return;
             }
+
+            // Check if trying to reject - show rejection modal
+            if (status === 'Rejected') {
+                openRejectionModal();
+                return;
+            }
+            
+            console.log("Updating complaint:", currentComplaint.id, {status, comment, eta, department});
             
             let updated = currentComplaint;
             
@@ -459,23 +595,161 @@
                     eta,
                     department
                 );
+                console.log("Status update result:", updated ? "Success" : "Failed");
             } else {
                 // Update only comment/eta/department without status change
                 updated = updateComplaint(currentComplaint.id, {
-                    officerComment: comment || currentComplaint.officerComment,
-                    eta: eta || currentComplaint.eta,
-                    department: department || currentComplaint.department
+                    officerComment: comment || currentComplaint.officerComment || "",
+                    eta: eta || currentComplaint.eta || "",
+                    department: department || currentComplaint.department || "",
+                    updatedAt: new Date().toISOString()
                 });
+                console.log("Comment/ETA/Department update result:", updated ? "Success" : "Failed");
             }
             
             if (updated) {
                 showToast('Complaint updated successfully', 'success');
                 simulateNotification(updated, 'status_update');
                 closeModal();
+                
+                // Re-verify the data was saved
+                const savedComplaint = getComplaint(currentComplaint.id);
+                console.log("Verification - Complaint after save:", savedComplaint);
+                
                 loadComplaints();
             } else {
                 showToast('Failed to update complaint', 'error');
+                console.error('Update failed for complaint:', currentComplaint.id);
             }
+        }
+
+        // Rejection Modal Functions
+        function openRejectionModal() {
+            document.getElementById('rejection-modal').classList.add('active');
+            
+            // Setup listeners
+            const reasonSelect = document.getElementById('rejection-reason');
+            const otherContainer = document.getElementById('other-reason-container');
+            const commentArea = document.getElementById('rejection-comment');
+            const confirmBtn = document.getElementById('confirm-reject-btn');
+            
+            reasonSelect.onchange = function() {
+                if (this.value === 'Other') {
+                    otherContainer.style.display = 'block';
+                } else {
+                    otherContainer.style.display = 'none';
+                }
+                validateRejectionForm();
+            };
+            
+            commentArea.oninput = function() {
+                const charCount = document.getElementById('char-count');
+                charCount.textContent = `${this.value.length} / 30 characters`;
+                charCount.style.color = this.value.length >= 30 ? 'var(--success-green)' : 'var(--text-tertiary)';
+                validateRejectionForm();
+            };
+            
+            document.getElementById('other-reason-text').oninput = validateRejectionForm;
+        }
+
+        function closeRejectionModal() {
+            document.getElementById('rejection-modal').classList.remove('active');
+            // Reset form
+            document.getElementById('rejection-reason').value = '';
+            document.getElementById('other-reason-text').value = '';
+            document.getElementById('rejection-comment').value = '';
+            document.getElementById('other-reason-container').style.display = 'none';
+            document.getElementById('char-count').textContent = '0 / 30 characters';
+        }
+
+        function validateRejectionForm() {
+            const reason = document.getElementById('rejection-reason').value;
+            const otherReason = document.getElementById('other-reason-text').value;
+            const comment = document.getElementById('rejection-comment').value;
+            const confirmBtn = document.getElementById('confirm-reject-btn');
+            
+            let valid = true;
+            
+            if (!reason) valid = false;
+            if (reason === 'Other' && !otherReason.trim()) valid = false;
+            if (comment.length < 30) valid = false;
+            
+            confirmBtn.disabled = !valid;
+            
+            return valid;
+        }
+
+        function confirmRejection() {
+            if (!validateRejectionForm()) {
+                showToast('Cannot reject without valid reason and comment (min 30 characters)', 'error');
+                return;
+            }
+            
+            const reason = document.getElementById('rejection-reason').value;
+            const otherReason = document.getElementById('other-reason-text').value;
+            const comment = document.getElementById('rejection-comment').value;
+            
+            const finalReason = reason === 'Other' ? otherReason : reason;
+            
+            console.log("Confirming rejection:", currentComplaint.id, {reason: finalReason, comment});
+            
+            const departmentEl = document.getElementById('update-department');
+            const etaEl = document.getElementById('update-eta');
+            const department = departmentEl ? departmentEl.value : null;
+            const eta = etaEl ? etaEl.value : null;
+            
+            const updated = updateComplaintStatus(
+                currentComplaint.id,
+                'Rejected',
+                comment,
+                eta,
+                department,
+                finalReason
+            );
+            
+            if (updated) {
+                showToast('Complaint rejected with reason', 'success');
+                simulateNotification(updated, 'status_update');
+                closeRejectionModal();
+                closeModal();
+                loadComplaints();
+            } else {
+                showToast('Failed to reject complaint', 'error');
+            }
+        }
+
+        function escalateCurrentComplaint() {
+            if (!currentComplaint) return;
+            
+            console.log("Escalating complaint:", currentComplaint.id);
+            
+            const complaints = getComplaints();
+            const idx = complaints.findIndex(c => c.id === currentComplaint.id);
+            
+            if (idx === -1) {
+                showToast('Complaint not found', 'error');
+                return;
+            }
+            
+            // Update complaint with escalation
+            complaints[idx].escalated = true;
+            complaints[idx].updatedAt = new Date().toISOString();
+            complaints[idx].timeline = complaints[idx].timeline || [];
+            complaints[idx].timeline.push({ 
+                step: "Escalated to Higher Authority", 
+                status: "completed",
+                date: new Date().toISOString() 
+            });
+            
+            // Save to localStorage
+            localStorage.setItem("delhiComplaints", JSON.stringify(complaints));
+            console.log("Complaint escalated and saved to delhiComplaints");
+            
+            showToast('Complaint escalated successfully', 'success');
+            simulateNotification(complaints[idx], 'escalated');
+            
+            closeModal();
+            loadComplaints();
         }
 
         function closeModal() {
